@@ -6,6 +6,7 @@ authors: [Jikoo, ShadowRanger]
 description: >
              This plugin allows you to open a player's inventory as a chest and interact with it in real time.
 api-version: "1.16"
+folia-supported: true
 
 permissions:
   OpenInv.any.default:

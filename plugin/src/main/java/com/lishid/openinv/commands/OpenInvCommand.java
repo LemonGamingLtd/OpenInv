@@ -25,13 +25,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.StringJoiner;
+
+import me.nahu.scheduler.wrapper.runnable.WrappedRunnable;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 public class OpenInvCommand implements TabExecutor {
@@ -79,7 +80,7 @@ public class OpenInvCommand implements TabExecutor {
             name = args[0];
         }
 
-        new BukkitRunnable() {
+        new WrappedRunnable() {
             @Override
             public void run() {
                 final OfflinePlayer offlinePlayer = OpenInvCommand.this.plugin.matchPlayer(name);
@@ -89,7 +90,7 @@ public class OpenInvCommand implements TabExecutor {
                     return;
                 }
 
-                new BukkitRunnable() {
+                new WrappedRunnable() {
                     @Override
                     public void run() {
                         if (!player.isOnline()) {
@@ -97,7 +98,7 @@ public class OpenInvCommand implements TabExecutor {
                         }
                         OpenInvCommand.this.openInventory(player, offlinePlayer, openInv);
                     }
-                }.runTask(OpenInvCommand.this.plugin);
+                }.runTaskAtEntity(OpenInvCommand.this.plugin, player);
 
             }
         }.runTaskAsynchronously(this.plugin);

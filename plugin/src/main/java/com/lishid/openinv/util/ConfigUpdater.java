@@ -44,7 +44,7 @@ public record ConfigUpdater(OpenInv plugin) {
             plugin.getLogger().warning("Could not back up config.yml before updating!");
         }
 
-        plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+        plugin.getScheduler().runTaskAsynchronously(() -> {
             if (version < 2) {
                 updateConfig1To2();
             }
@@ -61,7 +61,7 @@ public record ConfigUpdater(OpenInv plugin) {
                 updateConfig5To6();
             }
 
-            plugin.getServer().getScheduler().runTask(plugin, () -> {
+            plugin.getScheduler().runTask(() -> {
                 plugin.saveConfig();
                 plugin.getLogger().info("Configuration update complete!");
             });
@@ -69,7 +69,7 @@ public record ConfigUpdater(OpenInv plugin) {
     }
 
     private void updateConfig5To6() {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             plugin.getConfig().set("settings.command.open.no-args-opens-self", false);
             plugin.getConfig().set("settings.command.searchcontainer.max-radius", 10);
             plugin.getConfig().set("config-version", 6);
@@ -77,14 +77,14 @@ public record ConfigUpdater(OpenInv plugin) {
     }
 
     private void updateConfig4To5() {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             plugin.getConfig().set("settings.disable-offline-access", false);
             plugin.getConfig().set("config-version", 5);
         });
     }
 
     private void updateConfig3To4() {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             plugin.getConfig().set("notify", null);
             plugin.getConfig().set("settings.locale", "en_US");
             plugin.getConfig().set("config-version", 4);
@@ -92,7 +92,7 @@ public record ConfigUpdater(OpenInv plugin) {
     }
 
     private void updateConfig2To3() {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             plugin.getConfig().set("config-version", 3);
             plugin.getConfig().set("items.open-inv", null);
             plugin.getConfig().set("ItemOpenInv", null);
@@ -104,7 +104,7 @@ public record ConfigUpdater(OpenInv plugin) {
     }
 
     private void updateConfig1To2() {
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             // Get the old config settings
             boolean notifySilentChest = plugin.getConfig().getBoolean("NotifySilentChest", true);
             boolean notifyAnyChest = plugin.getConfig().getBoolean("NotifyAnyChest", true);
@@ -143,7 +143,7 @@ public record ConfigUpdater(OpenInv plugin) {
             }
         }
 
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
+        plugin.getScheduler().runTask(() -> {
             // Wipe old ConfigurationSection
             plugin.getConfig().set(sectionName, null);
 

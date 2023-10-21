@@ -84,7 +84,7 @@ record InventoryListener(OpenInv plugin) implements Listener {
         if (event.getAction() != InventoryAction.MOVE_TO_OTHER_INVENTORY) {
             // All own-inventory interactions require updates to display properly.
             // Update in same tick after event completion.
-            this.plugin.getServer().getScheduler().runTask(this.plugin, player::updateInventory);
+            this.plugin.getScheduler().runTaskAtEntity(player, player::updateInventory);
             return;
         }
 
@@ -100,7 +100,7 @@ record InventoryListener(OpenInv plugin) implements Listener {
         event.setCurrentItem(null);
 
         // Complete add action in same tick after event completion.
-        this.plugin.getServer().getScheduler().runTask(this.plugin, () -> {
+        this.plugin.getScheduler().runTaskAtEntity(player, () -> {
             player.getInventory().addItem(clone);
             player.updateInventory();
         });

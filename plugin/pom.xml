@@ -40,6 +40,10 @@
       <artifactId>spigot-api</artifactId>
       <groupId>org.spigotmc</groupId>
     </dependency>
+    <dependency>
+      <artifactId>folia-scheduler-wrapper</artifactId>
+      <groupId>com.github.NahuLD</groupId>
+    </dependency>
   </dependencies>
 
   <build>

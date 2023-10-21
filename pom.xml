@@ -65,10 +65,20 @@
       <id>spigot-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
     </repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <artifactId>folia-scheduler-wrapper</artifactId>
+        <groupId>com.github.NahuLD</groupId>
+        <scope>compile</scope>
+        <version>v0.0.2</version>
+      </dependency>
       <dependency>
         <artifactId>annotations</artifactId>
         <groupId>org.jetbrains</groupId>
@@ -127,6 +137,13 @@
                 </includes>
               </filter>
               <filter>
+                <!-- Always shade entirety of required modules. -->
+                <artifact>me.nahu.scheduler:*</artifact>
+                <includes>
+                  <include>**</include>
+                </includes>
+              </filter>
+              <filter>
                 <artifact>*:*</artifact>
                 <!-- Don't warn about file conflicts that'll be clobbered anyway. -->
                 <excludes>
@@ -134,6 +151,12 @@
                 </excludes>
               </filter>
             </filters>
+            <relocations>
+              <relocation>
+                <pattern>me.nahu</pattern>
+                <shadedPattern>com.lishid.openinv.libs.me.nahu</shadedPattern>
+              </relocation>
+            </relocations>
             <minimizeJar>true</minimizeJar>
           </configuration>
           <executions>

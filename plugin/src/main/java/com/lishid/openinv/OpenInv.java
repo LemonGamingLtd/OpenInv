@@ -38,6 +38,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -45,6 +46,8 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Stream;
+
+import me.nahu.scheduler.wrapper.FoliaWrappedJavaPlugin;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
@@ -68,7 +71,19 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author lishid
  */
-public class OpenInv extends JavaPlugin implements IOpenInv {
+public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
+
+    private static OpenInv instance;
+
+    /**
+     * Get the static singleton accessor for the plugin.
+     *
+     * @return {@link OpenInv} singleton instance.
+     */
+    @NotNull
+    public static OpenInv getInstance() {
+        return instance;
+    }
 
     private final Cache<String, PlayerProfile> offlineLookUpCache = CacheBuilder.newBuilder().maximumSize(10).build();
     private final Map<UUID, ISpecialPlayerInventory> inventories = new ConcurrentHashMap<>();
@@ -97,6 +112,7 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
     @Override
     public void onDisable() {
         if (this.disableSaving()) {
+            instance = null;
             return;
         }
 
@@ -117,12 +133,15 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
                     }
                     player.saveData();
                 });
+        instance = null;
     }
 
     @Override
     public void onEnable() {
         // Save default configuration if not present.
         this.saveDefaultConfig();
+
+        getLogger().info("Successfully initialized scheduler of type: " + getScheduler().getImplementationType());
 
         // Get plugin manager
         PluginManager pm = this.getServer().getPluginManager();
@@ -312,8 +331,8 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
             return this.accessor.getPlayerDataManager().loadPlayer(offline);
         }
 
-        Future<Player> future = Bukkit.getScheduler().callSyncMethod(this,
-                () -> OpenInv.this.accessor.getPlayerDataManager().loadPlayer(offline));
+        CompletableFuture<Player> future = new CompletableFuture<>();
+        getScheduler().runTask(() -> future.complete(OpenInv.this.accessor.getPlayerDataManager().loadPlayer(offline)));
 
         try {
             player = future.get();
@@ -564,12 +583,12 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
             // We don't want to risk recursively closing the same inventory repeatedly, so we schedule dumping viewers.
             // Worst case we schedule a couple redundant tasks if several people had the inventory open.
             if (inventory.isInUse()) {
-                getServer().getScheduler().runTask(this, () -> ejectViewers(inventory, viewer -> true));
+                ejectViewers(inventory, viewer -> true);
             }
         }
 
         // Schedule task to check in use status later this tick. Closing user is still in viewer list.
-        getServer().getScheduler().runTask(this, () -> {
+        getScheduler().runTask(() -> {
             if (loaded.isInUse()) {
                 return;
             }
@@ -584,12 +603,14 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
                 return;
             }
 
-            OpenPlayerSaveEvent event = new OpenPlayerSaveEvent(player, current);
-            getServer().getPluginManager().callEvent(event);
+            getScheduler().runTaskAtEntity(player, () -> {
+                OpenPlayerSaveEvent event = new OpenPlayerSaveEvent(player, current);
+                getServer().getPluginManager().callEvent(event);
 
-            if (!event.isCancelled()) {
-                this.accessor.getPlayerDataManager().inject(player).saveData();
-            }
+                if (!event.isCancelled()) {
+                    this.accessor.getPlayerDataManager().inject(player).saveData();
+                }
+            });
         });
     }
 
@@ -619,7 +640,7 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
         // New player may also be a more exact match than one already in the cache.
         // I.e. new player "lava1" is a better match for "lava" than "lava123"
         // Player joins are already quite intensive, so this is run on a delay.
-        this.getServer().getScheduler().runTaskLaterAsynchronously(this, () -> {
+        this.getScheduler().runTaskLaterAsynchronously(() -> {
             Iterator<Map.Entry<String, PlayerProfile>> iterator = this.offlineLookUpCache.asMap().entrySet().iterator();
             while (iterator.hasNext()) {
                 Map.Entry<String, PlayerProfile> entry = iterator.next();
@@ -665,21 +686,24 @@ public class OpenInv extends JavaPlugin implements IOpenInv {
                                 && !Objects.equals(viewer.getWorld(), inventory.getPlayer().getWorld()));
 
         if (task != null) {
-            getServer().getScheduler().runTask(this, task);
+            getScheduler().runTaskAtEntity(player, task);
         }
     }
 
     static void ejectViewers(@NotNull ISpecialInventory inventory, @NotNull Predicate<@NotNull HumanEntity> predicate) {
         Inventory bukkitInventory = inventory.getBukkitInventory();
         for (HumanEntity viewer : new ArrayList<>(bukkitInventory.getViewers())) {
-            if (viewer.getUniqueId().equals(inventory.getPlayer().getUniqueId())
+            OpenInv.getInstance().getScheduler().runTaskAtEntity(viewer, () -> {
+                if (viewer.getUniqueId().equals(inventory.getPlayer().getUniqueId())
                     && !viewer.getOpenInventory().getTopInventory().equals(bukkitInventory)) {
-                // Skip owner with other inventory open. They aren't actually a viewer.
-                continue;
-            }
-            if (predicate.test(viewer)) {
-                viewer.closeInventory();
-            }
+                    // Skip owner with other inventory open. They aren't actually a viewer.
+                    return;
+                }
+
+                if (predicate.test(viewer)) {
+                    viewer.closeInventory();
+                }
+            });
         }
     }
 
