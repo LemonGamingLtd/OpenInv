@@ -21,7 +21,7 @@
   <artifactId>openinvparent</artifactId>
   <name>OpenInv</name>
   <url>http://dev.bukkit.org/bukkit-plugins/openinv/</url>
-  <version>4.4.2-SNAPSHOT</version>
+  <version>4.4.6-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -40,7 +40,8 @@
       <modules>
         <module>api</module>
         <module>plugin</module>
-        <module>internal/v1_20_R1</module>
+        <module>internal/v1_20_R3</module>
+        <module>internal/v1_20_R4</module>
         <module>assembly</module>
       </modules>
     </profile>
@@ -81,7 +82,7 @@
         <artifactId>annotations</artifactId>
         <groupId>org.jetbrains</groupId>
         <scope>provided</scope>
-        <version>24.0.1</version>
+        <version>24.1.0</version>
       </dependency>
       <dependency>
         <artifactId>spigot-api</artifactId>
@@ -93,19 +94,24 @@
         <artifactId>openinvapi</artifactId>
         <groupId>com.lishid</groupId>
         <scope>compile</scope>
-        <version>4.4.2-SNAPSHOT</version>
+        <version>4.4.6-SNAPSHOT</version>
       </dependency>
       <dependency>
         <artifactId>openinvplugincore</artifactId>
         <groupId>com.lishid</groupId>
         <scope>compile</scope>
-        <version>4.4.2-SNAPSHOT</version>
+        <version>4.4.6-SNAPSHOT</version>
         <exclusions>
           <exclusion>
             <groupId>com.lishid</groupId>
             <artifactId>openinvapi</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <artifactId>planarwrappers</artifactId>
+        <groupId>com.github.jikoo</groupId>
+        <version>3.2.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -166,25 +172,25 @@
             </execution>
           </executions>
           <groupId>org.apache.maven.plugins</groupId>
-          <version>3.5.1</version>
+          <version>3.5.3</version>
         </plugin>
 
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <groupId>org.apache.maven.plugins</groupId>
-          <version>3.11.0</version>
+          <version>3.13.0</version>
         </plugin>
 
         <plugin>
           <artifactId>maven-assembly-plugin</artifactId>
           <groupId>org.apache.maven.plugins</groupId>
-          <version>3.6.0</version>
+          <version>3.7.1</version>
         </plugin>
 
         <plugin>
           <groupId>net.md-5</groupId>
           <artifactId>specialsource-maven-plugin</artifactId>
-          <version>1.2.4</version>
+          <version>2.0.3</version>
           <executions>
             <execution>
               <phase>package</phase>
