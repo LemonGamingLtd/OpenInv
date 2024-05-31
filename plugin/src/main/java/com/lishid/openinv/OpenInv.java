@@ -603,14 +603,12 @@ public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
                 return;
             }
 
-            getScheduler().runTaskAtEntity(player, () -> {
-                OpenPlayerSaveEvent event = new OpenPlayerSaveEvent(player, current);
-                getServer().getPluginManager().callEvent(event);
+            OpenPlayerSaveEvent event = new OpenPlayerSaveEvent(player, current);
+            getServer().getPluginManager().callEvent(event);
 
-                if (!event.isCancelled()) {
-                    this.accessor.getPlayerDataManager().inject(player).saveData();
-                }
-            });
+            if (!event.isCancelled()) {
+                this.accessor.getPlayerDataManager().inject(player).saveData();
+            }
         });
     }
 
