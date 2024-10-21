@@ -1,5 +1,6 @@
-config-version: 6
+config-version: 8
 settings:
+  equal-access: view
   command:
     open:
       no-args-opens-self: false
@@ -7,4 +8,4 @@ settings:
       max-radius: 10
   disable-offline-access: false
   disable-saving: false
-  locale: 'en_us'
+  console-locale: 'en'

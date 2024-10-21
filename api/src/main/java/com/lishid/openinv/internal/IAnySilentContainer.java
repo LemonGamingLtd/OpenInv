@@ -16,15 +16,11 @@
 
 package com.lishid.openinv.internal;
 
-import org.bukkit.block.Barrel;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.EnderChest;
-import org.bukkit.block.ShulkerBox;
-import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
-import org.bukkit.block.data.type.Chest;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
@@ -52,85 +48,12 @@ public interface IAnySilentContainer {
     void deactivateContainer(@NotNull Player player);
 
     /**
-     * @param player the player opening the container
-     * @param block  the {@link Block} of the container
-     * @return true if the container is blocked
-     * @deprecated use {@link #isAnyContainerNeeded(Block)}
-     */
-    @Deprecated(forRemoval = true, since = "4.1.9")
-    default boolean isAnyContainerNeeded(@NotNull Player player, @NotNull Block block) {
-        return isAnyContainerNeeded(block);
-    }
-
-    /**
      * Check if the container at the given coordinates is blocked.
      *
      * @param block the {@link Block} of the container
      * @return true if the container is blocked
      */
-    default boolean isAnyContainerNeeded(@NotNull Block block) {
-        BlockState blockState = block.getState();
-
-        // Barrels do not require AnyContainer.
-        if (blockState instanceof Barrel) {
-            return false;
-        }
-
-        // Enderchests require a non-occluding block on top to open.
-        if (blockState instanceof EnderChest) {
-            return block.getRelative(0, 1, 0).getType().isOccluding();
-        }
-
-        // Shulker boxes require half a block clear in the direction they open.
-        if (blockState instanceof ShulkerBox) {
-            return isShulkerBlocked(block);
-        }
-
-        if (!(blockState instanceof org.bukkit.block.Chest)) {
-            return false;
-        }
-
-        if (isChestBlocked(block)) {
-            return true;
-        }
-
-        BlockData blockData = block.getBlockData();
-        if (!(blockData instanceof Chest chest) || ((Chest) blockData).getType() == Chest.Type.SINGLE) {
-            return false;
-        }
-
-        int ordinal = (chest.getFacing().ordinal() + 4 + (chest.getType() == Chest.Type.RIGHT ? -1 : 1)) % 4;
-        BlockFace relativeFace = BlockFace.values()[ordinal];
-        org.bukkit.block.Block relative = block.getRelative(relativeFace);
-
-        if (relative.getType() != block.getType()) {
-            return false;
-        }
-
-        BlockData relativeData = relative.getBlockData();
-        if (!(relativeData instanceof Chest relativeChest)) {
-            return false;
-        }
-
-        if (relativeChest.getFacing() != chest.getFacing()
-                || relativeChest.getType() != (chest.getType() == Chest.Type.RIGHT ? Chest.Type.LEFT : Chest.Type.RIGHT)) {
-            return false;
-        }
-
-        return isChestBlocked(relative);
-    }
-
-    /**
-     * Check if a {@link ShulkerBox} cannot be opened under ordinary circumstances.
-     *
-     * @deprecated Use {@link #isShulkerBlocked(Block)}.
-     * @param shulkerBox the shulker box container
-     * @return whether the container is blocked
-     */
-    @Deprecated(since = "4.4.4", forRemoval = true)
-    default boolean isShulkerBlocked(@NotNull ShulkerBox shulkerBox) {
-        return isShulkerBlocked(shulkerBox.getBlock());
-    }
+    boolean isAnyContainerNeeded(@NotNull Block block);
 
     /**
      * Check if a shulker box block cannot be opened under ordinary circumstances.
@@ -141,9 +64,13 @@ public interface IAnySilentContainer {
     default boolean isShulkerBlocked(@NotNull Block shulkerBox) {
         Directional directional = (Directional) shulkerBox.getBlockData();
         BlockFace facing = directional.getFacing();
+        // Construct a new 1-block bounding box at the origin.
         BoundingBox box = new BoundingBox(0, 0, 0, 1, 1, 1);
+        // Expand the box in the direction the shulker will open.
         box.expand(facing, 0.5);
+        // Move the box away from the origin by a block so only the expansion intersects with a box around the origin.
         box.shift(facing.getOppositeFace().getDirection());
+        // Check if the relative block's collision shape (which will be at the origin) intersects with the expanded box.
         return shulkerBox.getRelative(facing).getCollisionShape().overlaps(box);
     }
 
@@ -165,9 +92,7 @@ public interface IAnySilentContainer {
      * @param block the potential container
      * @return true if the type is a supported container
      */
-    default boolean isAnySilentContainer(@NotNull Block block) {
-        return isAnySilentContainer(block.getState());
-    }
+    boolean isAnySilentContainer(@NotNull Block block);
 
     /**
      * Check if the given {@link BlockState} is a container which can be unblocked or silenced.
@@ -176,7 +101,7 @@ public interface IAnySilentContainer {
      * @return true if the type is a supported container
      */
     default boolean isAnySilentContainer(@NotNull BlockState blockState) {
-        return blockState instanceof InventoryHolder holder && isAnySilentContainer(holder)
+        return (blockState instanceof InventoryHolder holder && isAnySilentContainer(holder))
                 || blockState instanceof EnderChest;
     }
 

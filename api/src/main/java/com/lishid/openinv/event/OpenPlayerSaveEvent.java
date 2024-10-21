@@ -1,35 +1,37 @@
 package com.lishid.openinv.event;
 
+import com.google.errorprone.annotations.RestrictedApi;
 import com.lishid.openinv.internal.ISpecialInventory;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
-import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Event fired before OpenInv saves a player's data.
+ * Event fired before OpenInv saves a player's data when closing an {@link ISpecialInventory}.
  */
-public class OpenPlayerSaveEvent extends Event implements Cancellable {
+public class OpenPlayerSaveEvent extends PlayerSaveEvent {
 
   private static final HandlerList HANDLERS = new HandlerList();
 
-  private final Player player;
   private final ISpecialInventory inventory;
-  private boolean cancelled = false;
-
-  public OpenPlayerSaveEvent(@NotNull Player player, @NotNull ISpecialInventory inventory) {
-    this.player = player;
-    this.inventory = inventory;
-  }
 
   /**
-   * Get the {@link Player} whose data is being saved.
+   * Construct a new {@code OpenPlayerSaveEvent}.
    *
-   * @return player the Player whose data is being saved
+   * <p>The constructor is not considered part of the API, and may be subject to change.</p>
+   *
+   * @param player the player to be saved
+   * @param inventory the {@link ISpecialInventory} being closed
    */
-  public @NotNull Player getPlayer() {
-    return player;
+  @RestrictedApi(
+      explanation = "Constructor is not considered part of the API and may be subject to change.",
+      link = "",
+      allowedOnPath = ".*/com/lishid/openinv/event/OpenEvents.java")
+  @ApiStatus.Internal
+  OpenPlayerSaveEvent(@NotNull Player player, @NotNull ISpecialInventory inventory) {
+    super(player);
+    this.inventory = inventory;
   }
 
   /**
@@ -39,26 +41,6 @@ public class OpenPlayerSaveEvent extends Event implements Cancellable {
    */
   public @NotNull ISpecialInventory getInventory() {
     return inventory;
-  }
-
-  /**
-   * Get whether the event is cancelled.
-   *
-   * @return true if the event is cancelled
-   */
-  @Override
-  public boolean isCancelled() {
-    return cancelled;
-  }
-
-  /**
-   * Set whether the event is cancelled.
-   *
-   * @param cancel whether the event is cancelled
-   */
-  @Override
-  public void setCancelled(boolean cancel) {
-    this.cancelled = cancel;
   }
 
   @NotNull

@@ -50,9 +50,9 @@ public class SpecialEnderChest extends PlayerEnderChestContainer implements ISpe
     private boolean playerOnline;
 
     public SpecialEnderChest(final org.bukkit.entity.Player player, final Boolean online) {
-        super(PlayerDataManager.getHandle(player));
+        super(PlayerManager.getHandle(player));
         this.inventory = new CraftInventory(this);
-        this.owner = PlayerDataManager.getHandle(player);
+        this.owner = PlayerManager.getHandle(player);
         this.playerOnline = online;
         this.items = this.owner.getEnderChestInventory().items;
     }
@@ -74,7 +74,7 @@ public class SpecialEnderChest extends PlayerEnderChestContainer implements ISpe
         }
 
         ServerPlayer offlinePlayer = this.owner;
-        ServerPlayer onlinePlayer = PlayerDataManager.getHandle(player);
+        ServerPlayer onlinePlayer = PlayerManager.getHandle(player);
 
         // Set owner to new player.
         this.owner = onlinePlayer;
@@ -199,7 +199,7 @@ public class SpecialEnderChest extends PlayerEnderChestContainer implements ISpe
     @Override
     public boolean canAddItem(ItemStack itemstack) {
         for (ItemStack itemstack1 : this.items) {
-            if (itemstack1.isEmpty() || ItemStack.isSameItemSameComponents(itemstack1, itemstack) && itemstack1.getCount() < itemstack1.getMaxStackSize()) {
+            if (itemstack1.isEmpty() || (ItemStack.isSameItemSameComponents(itemstack1, itemstack) && itemstack1.getCount() < itemstack1.getMaxStackSize())) {
                 return true;
             }
         }

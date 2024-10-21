@@ -3,9 +3,11 @@ name: OpenInv CI
 on:
   push:
     branches:
-      - '**'
+      - 'master'
     tags-ignore:
       - '**'
+    paths-ignore:
+      - resource-pack/**
   # Enable running CI via other Actions, i.e. for drafting releases and handling PRs.
   workflow_call:
 
@@ -34,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: ./target/OpenInv.jar
+          path: ./target/*.jar
       - name: Upload API Jar
         id: upload-api
         uses: actions/upload-artifact@v4

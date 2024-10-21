@@ -21,14 +21,16 @@
   <artifactId>openinvparent</artifactId>
   <name>OpenInv</name>
   <url>http://dev.bukkit.org/bukkit-plugins/openinv/</url>
-  <version>4.4.6-SNAPSHOT</version>
+  <modules>
+    <module>common</module>
+  </modules>
+  <version>5.1.3-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>17</maven.compiler.source>
-    <maven.compiler.target>17</maven.compiler.target>
+    <maven.compiler.system>17</maven.compiler.system>
     <maven.compiler.release>17</maven.compiler.release>
     <!-- Silence IDE warning - property is declared in individual internal modules. -->
     <spigot.version>unknown</spigot.version>
@@ -39,21 +41,22 @@
       <id>all</id>
       <modules>
         <module>api</module>
-        <module>plugin</module>
+        <module>addon/togglepersist</module>
+        <module>common</module>
+        <module>internal/v1_21_R1</module>
+        <module>internal/v1_20_R4</module>
         <module>internal/v1_20_R3</module>
-        <module>assembly</module>
+        <module>plugin</module>
       </modules>
     </profile>
 
     <profile>
-      <id>default</id>
+      <id>api-only</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
         <module>api</module>
-        <module>plugin</module>
-        <module>assembly</module>
       </modules>
     </profile>
   </profiles>
@@ -73,44 +76,39 @@
     <dependencies>
       <dependency>
         <artifactId>folia-scheduler-wrapper</artifactId>
-        <groupId>com.github.NahuLD</groupId>
+        <groupId>com.github.NahuLD.folia-scheduler-wrapper</groupId>
         <scope>compile</scope>
-        <version>v0.0.2</version>
+        <version>v0.0.3</version>
       </dependency>
       <dependency>
         <artifactId>annotations</artifactId>
         <groupId>org.jetbrains</groupId>
         <scope>provided</scope>
-        <version>24.1.0</version>
+        <version>25.0.0</version>
       </dependency>
       <dependency>
         <artifactId>spigot-api</artifactId>
         <groupId>org.spigotmc</groupId>
         <scope>provided</scope>
-        <version>1.18.2-R0.1-SNAPSHOT</version>
+        <version>1.20.4-R0.1-SNAPSHOT</version>
       </dependency>
       <dependency>
         <artifactId>openinvapi</artifactId>
         <groupId>com.lishid</groupId>
         <scope>compile</scope>
-        <version>4.4.6-SNAPSHOT</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
-        <artifactId>openinvplugincore</artifactId>
+        <artifactId>openinvcommon</artifactId>
         <groupId>com.lishid</groupId>
         <scope>compile</scope>
-        <version>4.4.6-SNAPSHOT</version>
-        <exclusions>
-          <exclusion>
-            <groupId>com.lishid</groupId>
-            <artifactId>openinvapi</artifactId>
-          </exclusion>
-        </exclusions>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <artifactId>planarwrappers</artifactId>
         <groupId>com.github.jikoo</groupId>
-        <version>3.2.0</version>
+        <scope>compile</scope>
+        <version>3.2.3</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -125,57 +123,60 @@
             -->
           <artifactId>maven-dependency-plugin</artifactId>
           <groupId>org.apache.maven.plugins</groupId>
-          <version>3.6.1</version>
+          <version>3.8.0</version>
         </plugin>
 
         <plugin>
           <artifactId>maven-shade-plugin</artifactId>
-          <configuration>
-            <filters>
-              <filter>
-                <!-- Always shade entirety of required modules. -->
-                <artifact>com.lishid:openinv*</artifact>
-                <includes>
-                  <include>**</include>
-                </includes>
-              </filter>
-              <filter>
-                <!-- Always shade entirety of required modules. -->
-                <artifact>me.nahu.scheduler:*</artifact>
-                <includes>
-                  <include>**</include>
-                </includes>
-              </filter>
-              <filter>
-                <artifact>*:*</artifact>
-                <!-- Don't warn about file conflicts that'll be clobbered anyway. -->
-                <excludes>
-                  <exclude>META-INF/MANIFEST.MF</exclude>
-                </excludes>
-              </filter>
-            </filters>
-            <relocations>
-              <relocation>
-                <pattern>me.nahu</pattern>
-                <shadedPattern>com.lishid.openinv.libs.me.nahu</shadedPattern>
-              </relocation>
-            </relocations>
-            <minimizeJar>true</minimizeJar>
-          </configuration>
-          <executions>
-            <execution>
-              <phase>package</phase>
-              <goals>
-                <goal>shade</goal>
-              </goals>
-            </execution>
-          </executions>
           <groupId>org.apache.maven.plugins</groupId>
-          <version>3.5.3</version>
+          <version>3.6.0</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-resources-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <version>3.3.1</version>
+        </plugin>
+
+        <plugin>
+          <artifactId>maven-jar-plugin</artifactId>
+          <groupId>org.apache.maven.plugins</groupId>
+          <version>3.4.2</version>
+          <configuration>
+            <archive>
+              <manifestEntries>
+                <paperweight-mappings-namespace>spigot</paperweight-mappings-namespace>
+              </manifestEntries>
+            </archive>
+          </configuration>
         </plugin>
 
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>com.google.errorprone</groupId>
+                <artifactId>error_prone_core</artifactId>
+                <version>2.33.0</version>
+              </path>
+            </annotationProcessorPaths>
+            <compilerArgs>
+              <arg>-XDcompilePolicy=simple</arg>
+              <arg>-Xplugin:ErrorProne</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+              <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+              <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+              <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+            </compilerArgs>
+            <fork>true</fork>
+          </configuration>
           <groupId>org.apache.maven.plugins</groupId>
           <version>3.13.0</version>
         </plugin>
@@ -187,9 +188,7 @@
         </plugin>
 
         <plugin>
-          <groupId>net.md-5</groupId>
           <artifactId>specialsource-maven-plugin</artifactId>
-          <version>2.0.3</version>
           <executions>
             <execution>
               <phase>package</phase>
@@ -218,6 +217,8 @@
               </configuration>
             </execution>
           </executions>
+          <groupId>net.md-5</groupId>
+          <version>2.0.3</version>
         </plugin>
       </plugins>
     </pluginManagement>

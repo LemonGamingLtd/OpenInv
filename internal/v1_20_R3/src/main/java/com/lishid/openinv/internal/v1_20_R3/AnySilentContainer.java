@@ -16,17 +16,15 @@
 
 package com.lishid.openinv.internal.v1_20_R3;
 
-import com.lishid.openinv.OpenInv;
-import com.lishid.openinv.internal.IAnySilentContainer;
+import com.lishid.openinv.internal.AnySilentContainerBase;
 import com.lishid.openinv.util.ReflectionHelper;
+import com.lishid.openinv.util.lang.LanguageManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.PlayerEnderChestContainer;
@@ -39,15 +37,10 @@ import net.minecraft.world.level.block.TrappedChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
-import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.Statistic;
-import org.bukkit.block.ShulkerBox;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,17 +48,20 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.util.logging.Logger;
 
-public class AnySilentContainer implements IAnySilentContainer {
+public class AnySilentContainer extends AnySilentContainerBase {
 
+    private final @NotNull Logger logger;
+    private final @NotNull LanguageManager lang;
     private @Nullable Field serverPlayerGameModeGameType;
 
-    public AnySilentContainer() {
+    public AnySilentContainer(@NotNull Logger logger, @NotNull LanguageManager lang) {
+        this.logger = logger;
+        this.lang = lang;
         try {
             try {
                 this.serverPlayerGameModeGameType = ServerPlayerGameMode.class.getDeclaredField("b");
                 this.serverPlayerGameModeGameType.setAccessible(true);
             } catch (NoSuchFieldException e) {
-                Logger logger = OpenInv.getPlugin(OpenInv.class).getLogger();
                 logger.warning("ServerPlayerGameMode#gameModeForPlayer's obfuscated name has changed!");
                 logger.warning("Please report this at https://github.com/Jikoo/OpenInv/issues");
                 logger.warning("Attempting to fall through using reflection. Please verify that SilentContainer does not fail.");
@@ -73,41 +69,9 @@ public class AnySilentContainer implements IAnySilentContainer {
                 this.serverPlayerGameModeGameType = ReflectionHelper.grabFieldByType(ServerPlayerGameMode.class, GameType.class);
             }
         } catch (SecurityException e) {
-            Logger logger = OpenInv.getPlugin(OpenInv.class).getLogger();
             logger.warning("Unable to directly write player game mode! SilentContainer will fail.");
             logger.log(java.util.logging.Level.WARNING, "Error obtaining GameType field", e);
         }
-    }
-
-    @Override
-    public boolean isShulkerBlocked(@NotNull ShulkerBox shulkerBox) {
-        org.bukkit.World bukkitWorld = shulkerBox.getWorld();
-        if (!(bukkitWorld instanceof CraftWorld)) {
-            bukkitWorld = Bukkit.getWorld(bukkitWorld.getUID());
-        }
-
-        if (!(bukkitWorld instanceof CraftWorld craftWorld)) {
-            Exception exception = new IllegalStateException("AnySilentContainer access attempted on an unknown world!");
-            OpenInv.getPlugin(OpenInv.class).getLogger().log(java.util.logging.Level.WARNING, exception.getMessage(), exception);
-            return false;
-        }
-
-        final ServerLevel world = craftWorld.getHandle();
-        final BlockPos blockPosition = new BlockPos(shulkerBox.getX(), shulkerBox.getY(), shulkerBox.getZ());
-        final BlockEntity tile = world.getBlockEntity(blockPosition);
-
-        if (!(tile instanceof ShulkerBoxBlockEntity shulkerBoxBlockEntity)
-                || shulkerBoxBlockEntity.getAnimationStatus() != ShulkerBoxBlockEntity.AnimationStatus.CLOSED) {
-            return false;
-        }
-
-        BlockState blockState = world.getBlockState(blockPosition);
-
-        // See net.minecraft.world.level.block.ShulkerBoxBlock#canOpen
-        AABB boundingBox = Shulker.getProgressDeltaAabb(blockState.getValue(ShulkerBoxBlock.FACING), 0.0F, 0.5F)
-                .move(blockPosition)
-                .deflate(1.0E-6D);
-        return !world.noCollision(boundingBox);
     }
 
     @Override
@@ -123,7 +87,7 @@ public class AnySilentContainer implements IAnySilentContainer {
             return true;
         }
 
-        ServerPlayer player = PlayerDataManager.getHandle(bukkitPlayer);
+        ServerPlayer player = PlayerManager.getHandle(bukkitPlayer);
 
         final net.minecraft.world.level.Level level = player.level();
         final BlockPos blockPos = new BlockPos(bukkitBlock.getX(), bukkitBlock.getY(), bukkitBlock.getZ());
@@ -138,10 +102,10 @@ public class AnySilentContainer implements IAnySilentContainer {
             PlayerEnderChestContainer enderChest = player.getEnderChestInventory();
             enderChest.setActiveChest(enderChestTile);
             player.openMenu(new SimpleMenuProvider((containerCounter, playerInventory, ignored) -> {
-                MenuType<?> containers = PlayerDataManager.getContainers(enderChest.getContainerSize());
+                MenuType<?> containers = PlayerManager.getContainers(enderChest.getContainerSize());
                 int rows = enderChest.getContainerSize() / 9;
                 return new ChestMenu(containers, containerCounter, playerInventory, enderChest, rows);
-            }, Component.translatable(("container.enderchest"))));
+            }, Component.translatable("container.enderchest")));
             bukkitPlayer.incrementStatistic(Statistic.ENDERCHEST_OPENED);
             return true;
         }
@@ -159,7 +123,7 @@ public class AnySilentContainer implements IAnySilentContainer {
             menuProvider = chestBlock.getMenuProvider(blockState, level, blockPos, true);
 
             if (menuProvider == null) {
-                OpenInv.getPlugin(OpenInv.class).sendSystemMessage(bukkitPlayer, "messages.error.lootNotGenerated");
+                lang.sendSystemMessage(bukkitPlayer, "messages.error.lootNotGenerated");
                 return false;
             }
 
@@ -191,7 +155,7 @@ public class AnySilentContainer implements IAnySilentContainer {
 
         if (blockEntity instanceof RandomizableContainerBlockEntity lootable) {
             if (lootable.lootTable != null) {
-                OpenInv.getPlugin(OpenInv.class).sendSystemMessage(bukkitPlayer, "messages.error.lootNotGenerated");
+                lang.sendSystemMessage(bukkitPlayer, "messages.error.lootNotGenerated");
                 return false;
             }
         }
@@ -209,7 +173,7 @@ public class AnySilentContainer implements IAnySilentContainer {
             return;
         }
 
-        ServerPlayer player = PlayerDataManager.getHandle(bukkitPlayer);
+        ServerPlayer player = PlayerManager.getHandle(bukkitPlayer);
 
         // Force game mode change without informing plugins or players.
         // Regular game mode set calls GameModeChangeEvent and is cancellable.
@@ -237,7 +201,6 @@ public class AnySilentContainer implements IAnySilentContainer {
             this.serverPlayerGameModeGameType.setAccessible(true);
             this.serverPlayerGameModeGameType.set(player.gameMode, gameMode);
         } catch (IllegalArgumentException | IllegalAccessException e) {
-            Logger logger = OpenInv.getPlugin(OpenInv.class).getLogger();
             logger.log(java.util.logging.Level.WARNING, "Error bypassing GameModeChangeEvent", e);
         }
     }

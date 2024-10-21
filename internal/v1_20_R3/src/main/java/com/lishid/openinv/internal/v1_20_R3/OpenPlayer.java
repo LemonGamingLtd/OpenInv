@@ -16,6 +16,7 @@
 
 package com.lishid.openinv.internal.v1_20_R3;
 
+import com.lishid.openinv.event.OpenEvents;
 import com.mojang.logging.LogUtils;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -70,17 +71,24 @@ public class OpenPlayer extends CraftPlayer {
         "Brain"
     );
 
-    public OpenPlayer(CraftServer server, ServerPlayer entity) {
+    private final PlayerManager manager;
+
+    OpenPlayer(CraftServer server, ServerPlayer entity, PlayerManager manager) {
         super(server, entity);
+        this.manager = manager;
     }
 
     @Override
     public void loadData() {
-        PlayerDataManager.loadData(getHandle());
+        manager.loadData(getHandle());
     }
 
     @Override
     public void saveData() {
+        if (OpenEvents.saveCancelled(this)) {
+            return;
+        }
+
         ServerPlayer player = this.getHandle();
         // See net.minecraft.world.level.storage.PlayerDataStorage#save(EntityHuman)
         try {

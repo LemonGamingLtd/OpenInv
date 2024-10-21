@@ -16,39 +16,23 @@
 
 package com.lishid.openinv.util;
 
-import com.lishid.openinv.internal.IInventoryAccess;
+import com.google.errorprone.annotations.RestrictedApi;
 import com.lishid.openinv.internal.ISpecialEnderChest;
 import com.lishid.openinv.internal.ISpecialInventory;
 import com.lishid.openinv.internal.ISpecialPlayerInventory;
-import java.lang.reflect.Method;
-import org.bukkit.Bukkit;
 import org.bukkit.inventory.Inventory;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class InventoryAccess implements IInventoryAccess {
+import java.util.function.BiFunction;
 
-    private static Class<?> craftInventory = null;
-    private static Method getInventory = null;
+public final class InventoryAccess {
 
-    static {
-        String packageName = Bukkit.getServer().getClass().getPackage().getName();
-        try {
-            craftInventory = Class.forName(packageName + ".inventory.CraftInventory");
-            getInventory = craftInventory.getDeclaredMethod("getInventory");
-        } catch (ClassNotFoundException | NoSuchMethodException ignored) {}
-    }
-
-    /**
-     * @deprecated use {@link #isUsable()}
-     */
-    @Deprecated(forRemoval = true)
-    public static boolean isUseable() {
-        return isUsable();
-    }
+    private static @Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider;
 
     public static boolean isUsable() {
-        return craftInventory != null && getInventory != null;
+        return provider != null;
     }
 
     /**
@@ -69,7 +53,7 @@ public final class InventoryAccess implements IInventoryAccess {
      * @return the backing implementation if available
      */
     public static @Nullable ISpecialPlayerInventory getPlayerInventory(@NotNull Inventory inventory) {
-        return getSpecialInventory(ISpecialPlayerInventory.class, inventory);
+        return provider == null ? null : (ISpecialPlayerInventory) provider.apply(inventory, ISpecialPlayerInventory.class);
     }
 
     /**
@@ -90,34 +74,31 @@ public final class InventoryAccess implements IInventoryAccess {
      * @return the backing implementation if available
      */
     public static @Nullable ISpecialEnderChest getEnderChest(@NotNull Inventory inventory) {
-        return getSpecialInventory(ISpecialEnderChest.class, inventory);
-    }
-
-    private static <T extends ISpecialInventory> @Nullable T getSpecialInventory(@NotNull Class<T> expected, @NotNull Inventory inventory) {
-        Object inv;
-        if (isUsable() && craftInventory.isAssignableFrom(inventory.getClass())) {
-            try {
-                inv = getInventory.invoke(inventory);
-                if (expected.isInstance(inv)) {
-                    return expected.cast(inv);
-                }
-            } catch (ReflectiveOperationException ignored) {}
-        }
-
-        // Use reflection to find the IInventory
-        inv = ReflectionHelper.grabObjectByType(inventory, expected);
-
-        if (expected.isInstance(inv)) {
-            return expected.cast(inv);
-        }
-
-        return null;
+        return provider == null ? null : (ISpecialEnderChest) provider.apply(inventory, ISpecialEnderChest.class);
     }
 
     /**
-     * @deprecated Do not create a new instance to use static methods.
+     * Get a {@link ISpecialInventory} backing an {@link Inventory}. Returns {@code null} if the inventory is not backed
+     * by the correct class.
+     *
+     * @param inventory the Bukkit inventory
+     * @return the backing implementation if available
      */
-    @Deprecated(forRemoval = true, since = "4.2.0")
-    public InventoryAccess() {}
+    public static @Nullable ISpecialInventory getInventory(@NotNull Inventory inventory) {
+        return provider == null ? null : provider.apply(inventory, ISpecialInventory.class);
+    }
+
+    @RestrictedApi(
+        explanation = "Not part of the API.",
+        link = "",
+        allowedOnPath = ".*/com/lishid/openinv/util/InternalAccessor.java")
+    @ApiStatus.Internal
+    static void setProvider(@Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider) {
+        InventoryAccess.provider = provider;
+    }
+
+    private InventoryAccess() {
+        throw new IllegalStateException("Cannot create instance of utility class.");
+    }
 
 }
