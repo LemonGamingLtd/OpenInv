@@ -99,7 +99,7 @@ public class OpenInventoryMenu extends OpenChestMenu<OpenInventory> {
   }
 
   @Override
-  protected @NotNull CraftInventoryView<OpenChestMenu<OpenInventory>> createBukkitEntity() {
+  protected @NotNull CraftInventoryView<OpenChestMenu<OpenInventory>, Inventory> createBukkitEntity() {
     org.bukkit.inventory.Inventory bukkitInventory;
     if (viewOnly) {
       bukkitInventory = new OpenDummyInventory(container);

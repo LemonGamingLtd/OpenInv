@@ -1,6 +1,7 @@
 package com.lishid.openinv.listener;
 
 import com.google.errorprone.annotations.Keep;
+import com.lishid.openinv.OpenInv;
 import com.lishid.openinv.internal.ISpecialEnderChest;
 import com.lishid.openinv.internal.ISpecialInventory;
 import com.lishid.openinv.internal.ISpecialPlayerInventory;
@@ -33,10 +34,10 @@ import java.util.stream.Collectors;
  */
 public class LegacyInventoryListener implements Listener {
 
-  private final @NotNull Plugin plugin;
+  private final @NotNull OpenInv plugin;
   private final @NotNull Config config;
 
-  public LegacyInventoryListener(@NotNull Plugin plugin, @NotNull Config config) {
+  public LegacyInventoryListener(@NotNull OpenInv plugin, @NotNull Config config) {
     this.plugin = plugin;
     this.config = config;
   }
@@ -67,7 +68,7 @@ public class LegacyInventoryListener implements Listener {
     event.setCurrentItem(null);
 
     // Complete add action in same tick after event completion.
-    this.plugin.getServer().getScheduler().runTask(this.plugin, () -> player.getInventory().addItem(clone));
+    this.plugin.getScheduler().runTaskAtEntity(player, () -> player.getInventory().addItem(clone));
   }
 
   @Keep
@@ -117,7 +118,7 @@ public class LegacyInventoryListener implements Listener {
     lost.setAmount(overlapLosses);
 
     // Re-add the lost items in the same tick after the event has completed.
-    plugin.getServer().getScheduler().runTask(plugin, () -> {
+    this.plugin.getScheduler().runTaskAtEntity(event.getWhoClicked(), () -> {
       InventoryView currentOpen = event.getWhoClicked().getOpenInventory();
 
       if (!currentOpen.equals(view)) {

@@ -45,7 +45,7 @@ public abstract class OpenChestMenu<T extends Container & ISpecialInventory & In
   protected final boolean viewOnly;
   protected final boolean ownContainer;
   protected final int topSize;
-  private CraftInventoryView<OpenChestMenu<T>> bukkitEntity;
+  private CraftInventoryView<OpenChestMenu<T>, Inventory> bukkitEntity;
   // Syncher fields
   private @Nullable ContainerSynchronizer synchronizer;
   private final List<DataSlot> dataSlots = new ArrayList<>();
@@ -132,7 +132,7 @@ public abstract class OpenChestMenu<T extends Container & ISpecialInventory & In
 
 
   @Override
-  public final @NotNull CraftInventoryView<OpenChestMenu<T>> getBukkitView() {
+  public final @NotNull CraftInventoryView<OpenChestMenu<T>, Inventory> getBukkitView() {
     if (bukkitEntity == null) {
       bukkitEntity = createBukkitEntity();
     }
@@ -140,7 +140,7 @@ public abstract class OpenChestMenu<T extends Container & ISpecialInventory & In
     return bukkitEntity;
   }
 
-  protected @NotNull CraftInventoryView<OpenChestMenu<T>> createBukkitEntity() {
+  protected @NotNull CraftInventoryView<OpenChestMenu<T>, Inventory> createBukkitEntity() {
     Inventory top;
     if (viewOnly) {
       top = new OpenDummyInventory(container);
