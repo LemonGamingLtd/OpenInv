@@ -114,6 +114,10 @@
               <pattern>com.github.jikoo.planarwrappers</pattern>
               <shadedPattern>com.github.jikoo.openinv.planarwrappers</shadedPattern>
             </relocation>
+            <relocation>
+              <pattern>me.nahu.scheduler</pattern>
+              <shadedPattern>com.github.jikoo.openinv.scheduler</shadedPattern>
+            </relocation>
           </relocations>
           <minimizeJar>true</minimizeJar>
         </configuration>
