@@ -265,35 +265,37 @@ public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
         if (inventory instanceof ISpecialPlayerInventory) {
             edit = ownContainer ? Permissions.INVENTORY_EDIT_SELF : Permissions.INVENTORY_EDIT_OTHER;
         } else if (inventory instanceof ISpecialEnderChest) {
-            edit = ownContainer ? Permissions.ENDERCHEST_EDIT_SELF : Permissions.ENDERCHEST_OPEN_OTHER;
+            edit = ownContainer ? Permissions.ENDERCHEST_EDIT_SELF : Permissions.ENDERCHEST_EDIT_OTHER;
         }
 
         boolean viewOnly = edit != null && !edit.hasPermission(player);
 
-        if (!ownContainer && !viewOnly) {
-            for (int level = 4; level > 0; --level) {
-                String permission = "openinv.access.level." + level;
-                // If the target doesn't have this access level...
-                if (!target.hasPermission(permission)) {
-                    // If the viewer does have the access level, all good.
-                    if (player.hasPermission(permission)) {
-                        break;
-                    }
-                    // Otherwise check next access level.
-                    continue;
-                }
+        if (ownContainer || viewOnly && config.getAccessEqualMode() != AccessEqualMode.DENY) {
+            this.accessor.openInventory(player, inventory, viewOnly);
+        }
 
-                // If the player doesn't have an equal access level or equal access is a denial, deny.
-                if (!player.hasPermission(permission) || config.getAccessEqualMode() == AccessEqualMode.DENY) {
-                    return null;
+        for (int level = 4; level > 0; --level) {
+            String permission = "openinv.access.level." + level;
+            // If the target doesn't have this access level...
+            if (!target.hasPermission(permission)) {
+                // If the viewer does have the access level, all good.
+                if (player.hasPermission(permission)) {
+                    break;
                 }
-
-                // Since this is a tie, setting decides view state.
-                if (config.getAccessEqualMode() == AccessEqualMode.VIEW) {
-                    viewOnly = true;
-                }
-                break;
+                // Otherwise check next access level.
+                continue;
             }
+
+            // If the viewer doesn't have an equal access level or equal access is a denial, deny.
+            if (!player.hasPermission(permission) || config.getAccessEqualMode() == AccessEqualMode.DENY) {
+                return null;
+            }
+
+            // Since this is a tie, setting decides view state.
+            if (config.getAccessEqualMode() == AccessEqualMode.VIEW) {
+                viewOnly = true;
+            }
+            break;
         }
 
         return this.accessor.openInventory(player, inventory, viewOnly);

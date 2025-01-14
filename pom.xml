@@ -24,7 +24,7 @@
   <modules>
     <module>common</module>
   </modules>
-  <version>5.1.4-SNAPSHOT</version>
+  <version>5.1.6-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
@@ -43,8 +43,8 @@
         <module>api</module>
         <module>addon/togglepersist</module>
         <module>common</module>
+        <module>internal/v1_21_R3</module>
         <module>internal/v1_21_R2</module>
-        <module>internal/v1_21_R1</module>
         <module>plugin</module>
       </modules>
     </profile>
@@ -107,7 +107,7 @@
         <artifactId>planarwrappers</artifactId>
         <groupId>com.github.jikoo</groupId>
         <scope>compile</scope>
-        <version>3.2.3</version>
+        <version>3.3.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
