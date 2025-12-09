@@ -29,76 +29,78 @@ import java.util.function.BiFunction;
 
 public final class InventoryAccess {
 
-    private static @Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider;
+  private static @Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider;
 
-    public static boolean isUsable() {
-        return provider != null;
-    }
+  public static boolean isUsable() {
+    return provider != null;
+  }
 
-    /**
-     * Check if an {@link Inventory} is an {@link ISpecialPlayerInventory} implementation.
-     *
-     * @param inventory the Bukkit inventory
-     * @return true if backed by the correct implementation
-     */
-    public static boolean isPlayerInventory(@NotNull Inventory inventory) {
-        return getPlayerInventory(inventory) != null;
-    }
+  /**
+   * Check if an {@link Inventory} is an {@link ISpecialPlayerInventory} implementation.
+   *
+   * @param inventory the Bukkit inventory
+   * @return true if backed by the correct implementation
+   */
+  public static boolean isPlayerInventory(@NotNull Inventory inventory) {
+    return getPlayerInventory(inventory) != null;
+  }
 
-    /**
-     * Get the {@link ISpecialPlayerInventory} backing an {@link Inventory}. Returns {@code null} if the inventory is
-     * not backed by the correct class.
-     *
-     * @param inventory the Bukkit inventory
-     * @return the backing implementation if available
-     */
-    public static @Nullable ISpecialPlayerInventory getPlayerInventory(@NotNull Inventory inventory) {
-        return provider == null ? null : (ISpecialPlayerInventory) provider.apply(inventory, ISpecialPlayerInventory.class);
-    }
+  /**
+   * Get the {@link ISpecialPlayerInventory} backing an {@link Inventory}. Returns {@code null} if the inventory is
+   * not backed by the correct class.
+   *
+   * @param inventory the Bukkit inventory
+   * @return the backing implementation if available
+   */
+  public static @Nullable ISpecialPlayerInventory getPlayerInventory(@NotNull Inventory inventory) {
+    return provider == null ? null : (ISpecialPlayerInventory) provider.apply(inventory, ISpecialPlayerInventory.class);
+  }
 
-    /**
-     * Check if an {@link Inventory} is an {@link ISpecialEnderChest} implementation.
-     *
-     * @param inventory the Bukkit inventory
-     * @return true if backed by the correct implementation
-     */
-    public static boolean isEnderChest(@NotNull Inventory inventory) {
-        return getEnderChest(inventory) != null;
-    }
+  /**
+   * Check if an {@link Inventory} is an {@link ISpecialEnderChest} implementation.
+   *
+   * @param inventory the Bukkit inventory
+   * @return true if backed by the correct implementation
+   */
+  public static boolean isEnderChest(@NotNull Inventory inventory) {
+    return getEnderChest(inventory) != null;
+  }
 
-    /**
-     * Get the {@link ISpecialEnderChest} backing an {@link Inventory}. Returns {@code null} if the inventory is
-     * not backed by the correct class.
-     *
-     * @param inventory the Bukkit inventory
-     * @return the backing implementation if available
-     */
-    public static @Nullable ISpecialEnderChest getEnderChest(@NotNull Inventory inventory) {
-        return provider == null ? null : (ISpecialEnderChest) provider.apply(inventory, ISpecialEnderChest.class);
-    }
+  /**
+   * Get the {@link ISpecialEnderChest} backing an {@link Inventory}. Returns {@code null} if the inventory is
+   * not backed by the correct class.
+   *
+   * @param inventory the Bukkit inventory
+   * @return the backing implementation if available
+   */
+  public static @Nullable ISpecialEnderChest getEnderChest(@NotNull Inventory inventory) {
+    return provider == null ? null : (ISpecialEnderChest) provider.apply(inventory, ISpecialEnderChest.class);
+  }
 
-    /**
-     * Get a {@link ISpecialInventory} backing an {@link Inventory}. Returns {@code null} if the inventory is not backed
-     * by the correct class.
-     *
-     * @param inventory the Bukkit inventory
-     * @return the backing implementation if available
-     */
-    public static @Nullable ISpecialInventory getInventory(@NotNull Inventory inventory) {
-        return provider == null ? null : provider.apply(inventory, ISpecialInventory.class);
-    }
+  /**
+   * Get a {@link ISpecialInventory} backing an {@link Inventory}. Returns {@code null} if the inventory is not backed
+   * by the correct class.
+   *
+   * @param inventory the Bukkit inventory
+   * @return the backing implementation if available
+   */
+  public static @Nullable ISpecialInventory getInventory(@NotNull Inventory inventory) {
+    return provider == null ? null : provider.apply(inventory, ISpecialInventory.class);
+  }
 
-    @RestrictedApi(
-        explanation = "Not part of the API.",
-        link = "",
-        allowedOnPath = ".*/com/lishid/openinv/util/InternalAccessor.java")
-    @ApiStatus.Internal
-    static void setProvider(@Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider) {
-        InventoryAccess.provider = provider;
-    }
+  @RestrictedApi(
+      explanation = "Not part of the API.",
+      allowedOnPath = ".*/com/lishid/openinv/util/InternalAccessor.java"
+  )
+  @ApiStatus.Internal
+  static void setProvider(
+      @Nullable BiFunction<Inventory, Class<? extends ISpecialInventory>, ISpecialInventory> provider
+  ) {
+    InventoryAccess.provider = provider;
+  }
 
-    private InventoryAccess() {
-        throw new IllegalStateException("Cannot create instance of utility class.");
-    }
+  private InventoryAccess() {
+    throw new IllegalStateException("Cannot create instance of utility class.");
+  }
 
 }

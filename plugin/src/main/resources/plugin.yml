@@ -1,10 +1,10 @@
 name: OpenInv
 main: com.lishid.openinv.OpenInv
-version: ${project.version}
+version: ${version}
 author: lishid
-authors: [Jikoo, ShadowRanger]
+authors: [ Jikoo, ShadowRanger ]
 description: Open a player's inventory as a chest and interact with it in real time.
-api-version: "1.16"
+api-version: "1.13"
 folia-supported: true
 
 permissions:
@@ -51,6 +51,11 @@ permissions:
               openinv.enderchest.edit.other:
                 children:
                   openinv.enderchest.open.other: true
+      # Clear nodes (/clearinv and /clearender)
+      openinv.clear:
+        children:
+          openinv.clear.self: true
+          openinv.clear.other: true
       # Player access
       openinv.access:
         children:
@@ -61,6 +66,9 @@ permissions:
           openinv.access.level.2: false
           openinv.access.level.3: false
           openinv.access.level.4: false
+          openinv.access.equal.edit: false
+          openinv.access.equal.view: false
+          openinv.access.equal.deny: false
       # Spectate features
       openinv.spectate:
         children:
@@ -78,49 +86,59 @@ permissions:
 
 commands:
   openinv:
-    aliases: [oi, inv, open]
+    aliases: [ oi, inv, open ]
     description: Open a player's inventory
     permission: openinv.inventory.open.self;openinv.inventory.open.other
     usage: |-
-           /<command> [Player] - Open a player's inventory
+      /<command> [Player] - Open a player's inventory
+  clearinv:
+    description: Clear a player's inventory
+    permission: openinv.clear.self;openinv.clear.other
+    usage: |-
+      /<command> [Player] - Clear a player's inventory
   openender:
-    aliases: [oe]
-    description: Opens the enderchest of a player
+    aliases: [ oe ]
+    description: Open a player's ender chest
     permission: openinv.enderchest.open.self;openinv.enderchest.open.other
     usage: |-
-           /<command> [Player] - Open a player's enderchest
+      /<command> [Player] - Open a player's ender chest
+  clearender:
+    description: Clear a player's ender chest
+    permission: openinv.clear.self;openinv.clear.other
+    usage: |-
+      /<command> [Player] - Clear a player's ender chest
   searchinv:
-    aliases: [si]
+    aliases: [ si ]
     description: Search and list players having a specific item
     permission: openinv.search.inventory
     usage: |-
-           /<command> <Material> [MinAmount] - MinAmount is optional, the minimum amount required
+      /<command> <Material> [MinAmount] - MinAmount is optional, the minimum amount required
   searchender:
-    aliases: [se]
+    aliases: [ se ]
     permission: openinv.search.inventory
-    description: Searches and lists players having a specific item in their ender chest
+    description: Search and list players having a specific item in their ender chest
     usage: |-
-           /<command> <Material> [MinAmount] - MinAmount is optional, the minimum amount required
+      /<command> <Material> [MinAmount] - MinAmount is optional, the minimum amount required
   silentcontainer:
-    aliases: [sc, silent, silentchest]
+    aliases: [ sc, silent, silentchest ]
     description: SilentContainer stops sounds and animations when using containers.
     permission: openinv.container.silent
     usage: |-
-           /<command> [check|on|off] - Check, toggle, or set SilentContainer
+      /<command> [check|on|off] - Check, toggle, or set SilentContainer
   anycontainer:
-    aliases: [ac, anychest]
+    aliases: [ ac, anychest ]
     description: AnyContainer allows using blocked containers.
     permission: openinv.container.any
     usage: |-
-           /<command> [check|on|off] - Check, toggle, or set AnyContainer
+      /<command> [check|on|off] - Check, toggle, or set AnyContainer
   searchenchant:
-    aliases: [searchenchants]
+    aliases: [ searchenchants ]
     description: Search and list players with a specific enchantment.
     permission: openinv.search.inventory
     usage: |-
-           /<command> <[Enchantment] [MinLevel]> - Enchantment is the enchantment type, MinLevel is the minimum level. One is optional
+      /<command> <[Enchantment] [MinLevel]> - Enchantment is the enchantment type, MinLevel is the minimum level. One is optional
   searchcontainer:
-    aliases: [searchchest]
+    aliases: [ searchchest ]
     description: Search and list containers with a specific material.
     permission: openinv.search.container
     usage: /<command> <Material> [ChunkRadius] - ChunkRadius is optional, the length that will be searched for matching items. Default 5

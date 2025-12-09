@@ -35,185 +35,269 @@ import java.util.logging.Logger;
 
 public class InternalAccessor {
 
-    private @Nullable Accessor internal;
+  private static final boolean PAPER;
 
-    public InternalAccessor(@NotNull Logger logger, @NotNull LanguageManager lang) {
+  static {
+    boolean paper = false;
+    try {
+      Class.forName("io.papermc.paper.configuration.GlobalConfiguration");
+      paper = true;
+    } catch (ClassNotFoundException ignored) {
+      // Expect remapped server.
+    }
+    PAPER = paper;
+  }
 
-        try {
-            if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 4))) {
-                internal = new com.lishid.openinv.internal.v1_21_R3.InternalAccessor(logger, lang);
-            } else if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 3))) {
-                internal = new com.lishid.openinv.internal.v1_21_R2.InternalAccessor(logger, lang);
-            }
-            if (internal != null) {
-                InventoryAccess.setProvider(internal::get);
-            }
-        } catch (NoClassDefFoundError | Exception e) {
-            internal = null;
-            InventoryAccess.setProvider(null);
-        }
+  private @Nullable Accessor internal;
+
+  public InternalAccessor(@NotNull Logger logger, @NotNull LanguageManager lang) {
+    try {
+      internal = getAccessor(logger, lang);
+
+      if (internal != null) {
+        InventoryAccess.setProvider(internal::get);
+      }
+    } catch (NoClassDefFoundError | Exception e) {
+      internal = null;
+      InventoryAccess.setProvider(null);
+    }
+  }
+
+  private @Nullable Accessor getAccessor(@NotNull Logger logger, @NotNull LanguageManager lang) {
+    Version maxSupported = Version.of(1, 21, 10);
+    Version minSupported = Version.of(1, 21, 1);
+
+    // Ensure version is in supported range.
+    if (BukkitVersions.MINECRAFT.greaterThan(maxSupported) || BukkitVersions.MINECRAFT.lessThan(minSupported)) {
+      return null;
     }
 
-    public String getReleasesLink() {
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 4, 4))) { // Good luck.
-            return "https://dev.bukkit.org/projects/openinv/files?&sort=datecreated";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 8, 8))) { // 1.8.8
-            return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 13))) { // 1.4.4+ had versioned packages.
-            return "https://github.com/lishid/OpenInv/releases/tag/4.0.0 (OpenInv-legacy)";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 13))) { // 1.13
-            return "https://github.com/lishid/OpenInv/releases/tag/4.0.0";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 14))) { // 1.13.1, 1.13.2
-            return "https://github.com/lishid/OpenInv/releases/tag/4.0.7";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 14))) { // 1.14 to 1.14.1 had no revision bump.
-            return "https://github.com/lishid/OpenInv/releases/tag/4.0.0";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 14, 1))) { // 1.14.1 to 1.14.2 had no revision bump.
-            return "https://github.com/lishid/OpenInv/releases/tag/4.0.1";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 15))) { // 1.14.2
-            return "https://github.com/lishid/OpenInv/releases/tag/4.1.1";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 15, 1))) { // 1.15, 1.15.1
-            return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 16))) { // 1.15.2
-            return "https://github.com/Jikoo/OpenInv/commit/502f661be39ee85d300851dd571f3da226f12345 (never released)";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 16, 1))) { // 1.16, 1.16.1
-            return "https://github.com/lishid/OpenInv/releases/tag/4.1.4";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 16, 3))) { // 1.16.2, 1.16.3
-            return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 17))) { // 1.16.4, 1.16.5
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.1.8";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 18, 1))) { // 1.17, 1.18, 1.18.1
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.1.10";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 19))) { // 1.18.2
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.3.0";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 19))) { // 1.19
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.2.0";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 19, 1))) { // 1.19.1
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.2.2";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 19, 3))) { // 1.19.2, 1.19.3
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.3.0";
-        }
-        if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 20))) { // 1.19.4
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.3";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 20, 1))) { // 1.20, 1.20.1
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.1";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 20, 3))) { // 1.20.2, 1.20.3
-            return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.3";
-        }
-        if (BukkitVersions.MINECRAFT.equals(Version.of(1, 20, 5))) { // 1.20.5
-            return "Unsupported; upgrade to 1.20.6: https://github.com/Jikoo/OpenInv/releases/tag/5.1.2";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21))) { // 1.20.4, 1.20.6, 1.21
-            return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.2";
-        }
-        if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 2))) {
-            return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.3";
-        }
-        return "https://github.com/Jikoo/OpenInv/releases";
+    // Load Spigot accessor.
+    if (!PAPER) {
+      if (BukkitVersions.MINECRAFT.equals(maxSupported)) {
+        // Current Spigot, remapped internals are available.
+        return new com.lishid.openinv.internal.reobf.InternalAccessor(logger, lang);
+      } else {
+        // Older Spigot; unsupported.
+        return null;
+      }
     }
 
-    /**
-     * Reload internal features.
-     */
-    public void reload(ConfigurationSection config) {
-        if (internal != null) {
-            internal.reload(config);
-        }
+    // Paper or a Paper fork, can use Mojang-mapped internals.
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(maxSupported)
+        && BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(1, 21, 9))) { // 1.21.9, 1.21.10
+      return new com.lishid.openinv.internal.common.InternalAccessor(logger, lang);
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 8))
+        && BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(1, 21, 6))) { // 1.21.6, 1.21.7, 1.21.8
+      return new com.lishid.openinv.internal.paper1_21_8.InternalAccessor(logger, lang);
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 5))) { // 1.21.5
+      return new com.lishid.openinv.internal.paper1_21_5.InternalAccessor(logger, lang);
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 4))) { // 1.21.4
+      return new com.lishid.openinv.internal.paper1_21_4.InternalAccessor(logger, lang);
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 21, 2))) {
+      // 1.21.1-1.21.2 placeholder format
+      return new com.lishid.openinv.internal.paper1_21_1.InternalAccessor(logger, lang);
     }
 
-    /**
-     * Gets the server implementation version.
-     *
-     * @return the version
-     */
-    public @NotNull String getVersion() {
-        return BukkitVersions.MINECRAFT.toString();
+    // 1.21.2, 1.21.3
+    return new com.lishid.openinv.internal.paper1_21_3.InternalAccessor(logger, lang);
+  }
+
+  public String getReleasesLink() {
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 4, 4))) { // Good luck.
+      return "https://dev.bukkit.org/projects/openinv/files?&sort=datecreated";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 8, 8))) { // 1.8.8
+      return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 13))) { // 1.4.4+ had versioned packages.
+      return "https://github.com/lishid/OpenInv/releases/tag/4.0.0 (OpenInv-legacy)";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 13))) { // 1.13
+      return "https://github.com/lishid/OpenInv/releases/tag/4.0.0";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 14))) { // 1.13.1, 1.13.2
+      return "https://github.com/lishid/OpenInv/releases/tag/4.0.7";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 14))) { // 1.14 to 1.14.1 had no revision bump.
+      return "https://github.com/lishid/OpenInv/releases/tag/4.0.0";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 14, 1))) { // 1.14.1 to 1.14.2 had no revision bump.
+      return "https://github.com/lishid/OpenInv/releases/tag/4.0.1";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 15))) { // 1.14.2
+      return "https://github.com/lishid/OpenInv/releases/tag/4.1.1";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 15, 1))) { // 1.15, 1.15.1
+      return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 16))) { // 1.15.2
+      return "https://github.com/Jikoo/OpenInv/commit/502f661be39ee85d300851dd571f3da226f12345 (never released)";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 16, 1))) { // 1.16, 1.16.1
+      return "https://github.com/lishid/OpenInv/releases/tag/4.1.4";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 16, 3))) { // 1.16.2, 1.16.3
+      return "https://github.com/lishid/OpenInv/releases/tag/4.1.5";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 17))) { // 1.16.4, 1.16.5
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.1.8";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 18, 1))) { // 1.17, 1.18, 1.18.1
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.1.10";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 19))) { // 1.18.2
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.3.0";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 19))) { // 1.19
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.2.0";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 19, 1))) { // 1.19.1
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.2.2";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 19, 3))) { // 1.19.2, 1.19.3
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.3.0";
+    }
+    if (BukkitVersions.MINECRAFT.lessThan(Version.of(1, 20))) { // 1.19.4
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.3";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 20, 1))) { // 1.20, 1.20.1
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.1";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 20, 3))) { // 1.20.2, 1.20.3
+      return "https://github.com/Jikoo/OpenInv/releases/tag/4.4.3";
+    }
+    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 20, 5))) { // 1.20.5
+      return "Unsupported; upgrade to 1.20.6: https://github.com/Jikoo/OpenInv/releases/tag/5.1.2";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21))) { // 1.20.4, 1.20.6, 1.21
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.2";
+    }
+    if (!PAPER) {
+      return getSpigotReleaseLink();
+    }
+    // Paper 1.21.1+
+    return "https://github.com/Jikoo/OpenInv/releases";
+  }
+
+  private String getSpigotReleaseLink() {
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 2))) {
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.3";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 3))) {
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.6";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 4))) {
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.9";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 5))) {
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.11";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 6))) {
+      return "Unsupported; upgrade to 1.21.7: https://github.com/Jikoo/OpenInv/releases";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 8))) {
+      return "https://github.com/Jikoo/OpenInv/releases/tag/5.1.13";
+    }
+    if (BukkitVersions.MINECRAFT.lessThanOrEqual(Version.of(1, 21, 9))) {
+      return "Unsupported; upgrade to 1.21.10: https://github.com/Jikoo/OpenInv/releases";
     }
 
-    /**
-     * Checks if the server implementation is supported.
-     *
-     * @return true if initialized for a supported server version
-     */
-    public boolean isSupported() {
-        return internal != null;
-    }
+    return "https://github.com/Jikoo/OpenInv/releases";
+  }
 
-    /**
-     * Get the instance of the IAnySilentContainer implementation for the current server version.
-     *
-     * @return the IAnySilentContainer
-     * @throws IllegalStateException if server version is unsupported
-     */
-    public @NotNull IAnySilentContainer getAnySilentContainer() {
-        if (internal == null) {
-            throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
-        }
-        return internal.getAnySilentContainer();
+  /**
+   * Reload internal features.
+   */
+  public void reload(ConfigurationSection config) {
+    if (internal != null) {
+      internal.reload(config);
     }
+  }
 
-    public @Nullable InventoryView openInventory(@NotNull Player player, @NotNull ISpecialInventory inventory, boolean viewOnly) {
-        if (internal == null) {
-            throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
-        }
-        return internal.getPlayerManager().openInventory(player, inventory, viewOnly);
-    }
+  /**
+   * Gets the server implementation version.
+   *
+   * @return the version
+   */
+  public @NotNull String getVersion() {
+    return BukkitVersions.MINECRAFT.toString();
+  }
 
-    /**
-     * Get the instance of the IPlayerDataManager implementation for the current server version.
-     *
-     * @return the IPlayerDataManager
-     * @throws IllegalStateException if server version is unsupported
-     */
-    @NotNull PlayerManager getPlayerDataManager() {
-        if (internal == null) {
-            throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
-        }
-        return internal.getPlayerManager();
-    }
+  /**
+   * Checks if the server implementation is supported.
+   *
+   * @return true if initialized for a supported server version
+   */
+  public boolean isSupported() {
+    return internal != null;
+  }
 
-    /**
-     * Creates an instance of the ISpecialEnderChest implementation for the given Player.
-     *
-     * @param player the Player
-     * @return the ISpecialEnderChest created
-     */
-    ISpecialEnderChest createEnderChest(final Player player) {
-        if (internal == null) {
-            throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
-        }
-        return internal.createEnderChest(player);
+  /**
+   * Get the instance of the IAnySilentContainer implementation for the current server version.
+   *
+   * @return the IAnySilentContainer
+   * @throws IllegalStateException if server version is unsupported
+   */
+  public @NotNull IAnySilentContainer getAnySilentContainer() {
+    if (internal == null) {
+      throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
     }
+    return internal.getAnySilentContainer();
+  }
 
-    /**
-     * Creates an instance of the ISpecialPlayerInventory implementation for the given Player.
-     *
-     * @param player the Player
-     * @return the ISpecialPlayerInventory created
-     */
-    ISpecialPlayerInventory createInventory(final Player player) {
-        if (internal == null) {
-            throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
-        }
-        return internal.createPlayerInventory(player);
+  public @Nullable InventoryView openInventory(
+      @NotNull Player player,
+      @NotNull ISpecialInventory inventory,
+      boolean viewOnly
+  ) {
+    if (internal == null) {
+      throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
     }
+    return internal.getPlayerManager().openInventory(player, inventory, viewOnly);
+  }
+
+  /**
+   * Get the instance of the IPlayerDataManager implementation for the current server version.
+   *
+   * @return the IPlayerDataManager
+   * @throws IllegalStateException if server version is unsupported
+   */
+  @NotNull PlayerManager getPlayerDataManager() {
+    if (internal == null) {
+      throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
+    }
+    return internal.getPlayerManager();
+  }
+
+  /**
+   * Creates an instance of the ISpecialEnderChest implementation for the given Player.
+   *
+   * @param player the Player
+   * @return the ISpecialEnderChest created
+   */
+  ISpecialEnderChest createEnderChest(final Player player) {
+    if (internal == null) {
+      throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
+    }
+    return internal.createEnderChest(player);
+  }
+
+  /**
+   * Creates an instance of the ISpecialPlayerInventory implementation for the given Player.
+   *
+   * @param player the Player
+   * @return the ISpecialPlayerInventory created
+   */
+  ISpecialPlayerInventory createInventory(final Player player) {
+    if (internal == null) {
+      throw new IllegalStateException(String.format("Unsupported server version %s!", BukkitVersions.MINECRAFT));
+    }
+    return internal.createPlayerInventory(player);
+  }
 
 }

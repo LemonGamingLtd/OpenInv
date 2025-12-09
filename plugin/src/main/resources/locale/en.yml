@@ -16,6 +16,9 @@ messages:
     containerBlocked: 'You are opening a blocked container.'
     containerBlockedSilent: 'You are opening a blocked container silently.'
     containerSilent: 'You are opening a container silently.'
+    clear:
+      inventory: 'Cleared %target%''s inventory.'
+      enderchest: 'Cleared %target%''s ender chest.'
     settingState: '%setting%: %state%'
     player:
       noMatches: 'No players found with %target%.'
@@ -25,6 +28,3 @@ messages:
       matches: 'Containers holding %target%: %detail%'
     'on': 'on'
     'off': 'off'
-container:
-  player: '%player%''s Inventory'
-  enderchest: '%player%''s Ender Chest'

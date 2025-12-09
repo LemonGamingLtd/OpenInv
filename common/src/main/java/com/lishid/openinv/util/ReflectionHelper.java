@@ -25,54 +25,54 @@ import java.lang.reflect.Field;
  */
 public final class ReflectionHelper {
 
-    /**
-     * Grab an {@link Object} stored in a {@link Field} of another {@code Object}.
-     *
-     * <p>This casts the field to the correct class. Any issues will result in a {@code null} return value.
-     *
-     * @param fieldType the {@link Class} of {@code Object} stored in the {@code Field}
-     * @param holder the containing {@code Object}
-     * @param <T> the type of stored {@code Object}
-     * @return the first matching {@code Object} or {@code null} if none match
-     */
-    public static <T> @Nullable T grabObjectByType(final Object holder, final Class<T> fieldType) {
-        Field field = grabFieldByType(holder.getClass(), fieldType);
+  /**
+   * Grab an {@link Object} stored in a {@link Field} of another {@code Object}.
+   *
+   * <p>This casts the field to the correct class. Any issues will result in a {@code null} return value.
+   *
+   * @param fieldType the {@link Class} of {@code Object} stored in the {@code Field}
+   * @param holder the containing {@code Object}
+   * @param <T> the type of stored {@code Object}
+   * @return the first matching {@code Object} or {@code null} if none match
+   */
+  public static <T> @Nullable T grabObjectByType(final Object holder, final Class<T> fieldType) {
+    Field field = grabFieldByType(holder.getClass(), fieldType);
 
-        if (field != null) {
-            try {
-                return fieldType.cast(field.get(holder));
-            } catch (IllegalAccessException ignored) {
-                // Ignore issues obtaining field
-            }
-        }
-
-        return null;
+    if (field != null) {
+      try {
+        return fieldType.cast(field.get(holder));
+      } catch (IllegalAccessException ignored) {
+        // Ignore issues obtaining field
+      }
     }
 
-    /**
-     * Grab a {@link Field} of an {@link Object}
-     *
-     * @param fieldType the {@link Class} of the object
-     * @param holderType the containing {@code Class}
-     * @return the first matching object or {@code null} if none match
-     */
-    public static @Nullable Field grabFieldByType(Class<?> holderType, Class<?> fieldType) {
-        for (Field field : holderType.getDeclaredFields()) {
-            if (fieldType.isAssignableFrom(field.getType())) {
-                field.setAccessible(true);
-                return field;
-            }
-        }
+    return null;
+  }
 
-        if (holderType.getSuperclass() != null) {
-            return grabFieldByType(fieldType, holderType.getSuperclass());
-        }
-
-        return null;
+  /**
+   * Grab a {@link Field} of an {@link Object}
+   *
+   * @param fieldType the {@link Class} of the object
+   * @param holderType the containing {@code Class}
+   * @return the first matching object or {@code null} if none match
+   */
+  public static @Nullable Field grabFieldByType(Class<?> holderType, Class<?> fieldType) {
+    for (Field field : holderType.getDeclaredFields()) {
+      if (fieldType.isAssignableFrom(field.getType())) {
+        field.setAccessible(true);
+        return field;
+      }
     }
 
-    private ReflectionHelper() {
-        throw new IllegalStateException("Cannot create instance of utility class.");
+    if (holderType.getSuperclass() != null) {
+      return grabFieldByType(fieldType, holderType.getSuperclass());
     }
+
+    return null;
+  }
+
+  private ReflectionHelper() {
+    throw new IllegalStateException("Cannot create instance of utility class.");
+  }
 
 }

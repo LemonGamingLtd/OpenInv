@@ -24,9 +24,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface ISpecialPlayerInventory extends ISpecialInventory {
 
-    @Override
-    default @NotNull InventoryType getBukkitType() {
-        return InventoryType.PLAYER;
-    }
+  @Override
+  default @NotNull InventoryType getBukkitType() {
+    return InventoryType.PLAYER;
+  }
 
 }

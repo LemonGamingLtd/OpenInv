@@ -27,46 +27,49 @@ import org.jetbrains.annotations.NotNull;
  */
 public interface ISpecialInventory {
 
-    /**
-     * Get the {@link Inventory} associated with this {@code ISpecialInventory}.
-     *
-     * @return the Bukkit inventory
-     */
-    @NotNull Inventory getBukkitInventory();
+  /**
+   * Get the {@link Inventory} associated with this {@code ISpecialInventory}.
+   *
+   * @return the Bukkit inventory
+   */
+  @NotNull Inventory getBukkitInventory();
 
-    /**
-     * Get the {@link InventoryType} corresponding to this {@code ISpecialInventory}.
-     *
-     * @return the type of Bukkit inventory
-     */
-    @NotNull InventoryType getBukkitType();
+  /**
+   * Get the {@link InventoryType} corresponding to this {@code ISpecialInventory}.
+   *
+   * @return the type of Bukkit inventory
+   */
+  @NotNull InventoryType getBukkitType();
 
-    /**
-     * Set the owning {@link Player} instance to a newly-joined user.
-     *
-     * @param player the user coming online
-     */
-    void setPlayerOnline(@NotNull Player player);
+  /**
+   * Set the owning {@link Player} instance to a newly-joined user.
+   *
+   * @param player the user coming online
+   */
+  void setPlayerOnline(@NotNull Player player);
 
-    /**
-     * Mark the owner of the inventory offline.
-     */
-    void setPlayerOffline();
+  /**
+   * Mark the owner of the inventory offline.
+   *
+   * @deprecated No longer used by implementations.
+   */
+  @Deprecated(forRemoval = true, since = "5.1.11")
+  default void setPlayerOffline() {}
 
-    /**
-     * Get whether the inventory is being viewed by any users.
-     *
-     * @return true if the inventory is being viewed
-     */
-    default boolean isInUse() {
-        return !getBukkitInventory().getViewers().isEmpty();
-    }
+  /**
+   * Get whether the inventory is being viewed by any users.
+   *
+   * @return true if the inventory is being viewed
+   */
+  default boolean isInUse() {
+    return !getBukkitInventory().getViewers().isEmpty();
+  }
 
-    /**
-     * Get the {@link Player} who owns the inventory.
-     *
-     * @return the {@link HumanEntity} who owns the inventory
-     */
-    @NotNull HumanEntity getPlayer();
+  /**
+   * Get the {@link Player} who owns the inventory.
+   *
+   * @return the {@link HumanEntity} who owns the inventory
+   */
+  @NotNull HumanEntity getPlayer();
 
 }

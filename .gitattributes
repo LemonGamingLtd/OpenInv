@@ -1,0 +1,11 @@
+# Use lf endings by default.
+* text=auto eol=lf
+
+# Declare text file types just in case
+*.java text
+*.yml text
+*.xml text
+*.md text
+
+# Exclude binary files
+*.png binary

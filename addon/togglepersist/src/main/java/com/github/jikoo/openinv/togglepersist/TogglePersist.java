@@ -64,13 +64,16 @@ public class TogglePersist extends JavaPlugin implements Listener {
   }
 
   private void set(UUID playerId, String toggleName) {
-    enabledToggles.compute(playerId, (uuid, toggles) -> {
-      if (toggles == null) {
-        toggles = new HashSet<>();
-      }
-      toggles.add(toggleName);
-      return toggles;
-    });
+    enabledToggles.compute(
+        playerId,
+        (uuid, toggles) -> {
+          if (toggles == null) {
+            toggles = new HashSet<>();
+          }
+          toggles.add(toggleName);
+          return toggles;
+        }
+    );
   }
 
   @Override
@@ -97,13 +100,16 @@ public class TogglePersist extends JavaPlugin implements Listener {
       String idString = playerToggles.getKey().toString();
       for (String toggleName : playerToggles.getValue()) {
         // Add player ID to listing for each enabled toggle.
-        converted.compute(toggleName, (name, ids) -> {
-          if (ids == null) {
-            ids = new ArrayList<>();
-          }
-          ids.add(idString);
-          return ids;
-        });
+        converted.compute(
+            toggleName,
+            (name, ids) -> {
+              if (ids == null) {
+                ids = new ArrayList<>();
+              }
+              ids.add(idString);
+              return ids;
+            }
+        );
       }
     }
     return converted;
@@ -133,10 +139,13 @@ public class TogglePersist extends JavaPlugin implements Listener {
     if (event.isEnabled()) {
       set(event.getPlayerId(), event.getToggle().getName());
     } else {
-      enabledToggles.computeIfPresent(event.getPlayerId(), (uuid, toggles) -> {
-        toggles.remove(event.getToggle().getName());
-        return toggles.isEmpty() ? null : toggles;
-      });
+      enabledToggles.computeIfPresent(
+          event.getPlayerId(),
+          (uuid, toggles) -> {
+            toggles.remove(event.getToggle().getName());
+            return toggles.isEmpty() ? null : toggles;
+          }
+      );
     }
   }
 

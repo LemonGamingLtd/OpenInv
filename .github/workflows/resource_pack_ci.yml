@@ -7,18 +7,18 @@ on:
     tags-ignore:
       - '**'
     paths:
-      - resource-pack/**
+      - resource-pack/openinv-legibility-pack/**
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build resource pack
         id: upload-resource-pack
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openinv-legibility-pack
-          path: ./resource-pack/
+          path: ./resource-pack/openinv-legibility-pack/
           compression-level: 9

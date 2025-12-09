@@ -22,8 +22,8 @@ public class PlayerToggledEvent extends Event {
 
   @RestrictedApi(
       explanation = "Constructor is not considered part of the API and may be subject to change.",
-      link = "",
-      allowedOnPath = ".*/com/lishid/openinv/event/OpenEvents.java")
+      allowedOnPath = ".*/com/lishid/openinv/event/OpenEvents.java"
+  )
   @ApiStatus.Internal
   PlayerToggledEvent(@NotNull PlayerToggle toggle, @NotNull UUID uuid, boolean enabled) {
     this.toggle = toggle;

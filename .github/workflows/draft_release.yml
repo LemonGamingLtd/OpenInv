@@ -12,34 +12,25 @@ jobs:
     needs: [ run-ci ]
     runs-on: ubuntu-latest
     steps:
-      # Fetch all history - used to assemble changelog.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set Release Variables
-        run: bash ./scripts/set_release_env.sh
-
       - name: Download build
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: dist
           path: dist
 
-      - name: Package resource pack
-        run: |-
-          pushd resource-pack
-          zip -r ../dist/openinv-legibility-pack.zip .
-          popd
-
       - name: Create Release
         id: create-release
-        uses: softprops/action-gh-release@v2.2.1
+        uses: softprops/action-gh-release@v2.4.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: ${{ env.VERSIONED_NAME }}
-          body: ${{ env.GENERATED_CHANGELOG }}
+          name: OpenInv ${{ env.VERSIONED_NAME }}
+          body: |-
+            ## Supported server versions
+            **Paper:** TODO VERSION, 1.21.8, 1.21.7, 1.21.6, 1.21.5, 1.21.4, 1.21.3, 1.21.1  
+            **Spigot:** TODO VERSION
+            
+            TODO HELLO HUMAN, PRESS THE GENERATE CHANGELOG BUTTON PLEASE.
           draft: true
           prerelease: false
           files: ./dist/**

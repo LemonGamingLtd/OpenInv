@@ -20,6 +20,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,119 +35,132 @@ import java.util.function.Function;
  */
 public final class TabCompleter {
 
-    /**
-     * Offer tab completions for whole numbers.
-     *
-     * @param argument the argument to complete
-     * @return integer options
-     */
-    public static List<String> completeInteger(String argument) {
-        // Ensure existing argument is actually a number
-        if (!argument.isEmpty()) {
-            try {
-                Integer.parseInt(argument);
-            } catch (NumberFormatException e) {
-                return Collections.emptyList();
-            }
-        }
-
-        List<String> completions = new ArrayList<>(10);
-        for (int i = 0; i < 10; ++i) {
-            completions.add(argument + i);
-        }
-
-        return completions;
+  /**
+   * Offer tab completions for whole numbers.
+   *
+   * @param argument the argument to complete
+   * @return integer options
+   */
+  public static @NotNull @Unmodifiable List<String> completeInteger(@NotNull String argument) {
+    // Ensure existing argument is actually a number
+    if (!argument.isEmpty()) {
+      try {
+        Integer.parseInt(argument);
+      } catch (NumberFormatException e) {
+        return List.of();
+      }
     }
 
-    /**
-     * Offer tab completions for a given Enum.
-     *
-     * @param argument the argument to complete
-     * @param enumClazz the Enum to complete for
-     * @return the matching Enum values
-     */
-    public static List<String> completeEnum(String argument, Class<? extends Enum<?>> enumClazz) {
-        argument = argument.toLowerCase(Locale.ENGLISH);
-        List<String> completions = new ArrayList<>();
-
-        for (Enum<?> enumConstant : enumClazz.getEnumConstants()) {
-            String name = enumConstant.name().toLowerCase(Locale.ENGLISH);
-            if (name.startsWith(argument)) {
-                completions.add(name);
-            }
-        }
-
-        return completions;
+    List<String> completions = new ArrayList<>(10);
+    for (int i = 0; i < 10; ++i) {
+      completions.add(argument + i);
     }
 
-    /**
-     * Offer tab completions for a given array of Strings.
-     *
-     * @param argument the argument to complete
-     * @param options the Strings which may be completed
-     * @return the matching Strings
-     */
-    public static List<String> completeString(String argument, String[] options) {
-        argument = argument.toLowerCase(Locale.ENGLISH);
-        List<String> completions = new ArrayList<>();
+    return Collections.unmodifiableList(completions);
+  }
 
-        for (String option : options) {
-            if (option.startsWith(argument)) {
-                completions.add(option);
-            }
-        }
+  /**
+   * Offer tab completions for a given Enum.
+   *
+   * @param argument the argument to complete
+   * @param enumClazz the Enum to complete for
+   * @return the matching Enum values
+   */
+  public static @NotNull List<String> completeEnum(
+      @NotNull String argument,
+      @NotNull Class<? extends Enum<?>> enumClazz
+  ) {
+    argument = argument.toLowerCase(Locale.ENGLISH);
+    List<String> completions = new ArrayList<>();
 
-        return completions;
+    for (Enum<?> enumConstant : enumClazz.getEnumConstants()) {
+      String name = enumConstant.name().toLowerCase(Locale.ENGLISH);
+      if (name.startsWith(argument)) {
+        completions.add(name);
+      }
     }
 
-    /**
-     * Offer tab completions for visible online Players' names.
-     *
-     * @param sender the command's sender
-     * @param argument the argument to complete
-     * @return the matching Players' names
-     */
-    public static List<String> completeOnlinePlayer(CommandSender sender, String argument) {
-        List<String> completions = new ArrayList<>();
-        Player senderPlayer = sender instanceof Player ? (Player) sender : null;
+    return completions;
+  }
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            if (senderPlayer != null && !senderPlayer.canSee(player)) {
-                continue;
-            }
+  /**
+   * Offer tab completions for a given array of Strings.
+   *
+   * @param argument the argument to complete
+   * @param options the Strings which may be completed
+   * @return the matching Strings
+   */
+  public static @NotNull List<String> completeString(
+      @NotNull String argument,
+      @NotNull String @NotNull [] options
+  ) {
+    argument = argument.toLowerCase(Locale.ENGLISH);
+    List<String> completions = new ArrayList<>();
 
-            if (StringUtil.startsWithIgnoreCase(player.getName(), argument)) {
-                completions.add(player.getName());
-            }
-        }
-
-        return completions;
+    for (String option : options) {
+      if (option.startsWith(argument)) {
+        completions.add(option);
+      }
     }
 
-    /**
-     * Offer tab completions for a given array of Objects.
-     *
-     * @param argument the argument to complete
-     * @param converter the Function for converting the Object into a comparable String
-     * @param options the Objects which may be completed
-     * @return the matching Strings
-     */
-    public static <T> List<String> completeObject(String argument, Function<T, String> converter, T[] options) {
-        argument = argument.toLowerCase(Locale.ENGLISH);
-        List<String> completions = new ArrayList<>();
+    return completions;
+  }
 
-        for (T option : options) {
-            String optionString = converter.apply(option).toLowerCase(Locale.ENGLISH);
-            if (optionString.startsWith(argument)) {
-                completions.add(optionString);
-            }
-        }
+  /**
+   * Offer tab completions for visible online Players' names.
+   *
+   * @param sender the command's sender
+   * @param argument the argument to complete
+   * @return the matching Players' names
+   */
+  public static List<String> completeOnlinePlayer(
+      @Nullable CommandSender sender,
+      @NotNull String argument
+  ) {
+    List<String> completions = new ArrayList<>();
+    Player senderPlayer = sender instanceof Player player ? player : null;
 
-        return completions;
+    for (Player player : Bukkit.getOnlinePlayers()) {
+      if (senderPlayer != null && !senderPlayer.canSee(player)) {
+        continue;
+      }
+
+      if (StringUtil.startsWithIgnoreCase(player.getName(), argument)) {
+        completions.add(player.getName());
+      }
     }
 
-    private TabCompleter() {
-        throw new IllegalStateException("Cannot create instance of utility class.");
+    return completions;
+  }
+
+  /**
+   * Offer tab completions for a given array of Objects.
+   *
+   * @param argument the argument to complete
+   * @param converter the Function for converting the Object into a comparable String
+   * @param options the Objects which may be completed
+   * @return the matching Strings
+   */
+  public static <T> List<String> completeObject(
+      @NotNull String argument,
+      @NotNull Function<@NotNull T, @NotNull String> converter,
+      @NotNull T @NotNull[] options
+  ) {
+    argument = argument.toLowerCase(Locale.ENGLISH);
+    List<String> completions = new ArrayList<>();
+
+    for (T option : options) {
+      String optionString = converter.apply(option).toLowerCase(Locale.ENGLISH);
+      if (optionString.startsWith(argument)) {
+        completions.add(optionString);
+      }
     }
+
+    return completions;
+  }
+
+  private TabCompleter() {
+    throw new IllegalStateException("Cannot create instance of utility class.");
+  }
 
 }

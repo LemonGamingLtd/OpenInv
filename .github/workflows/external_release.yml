@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -34,4 +34,4 @@ jobs:
           game_versions: "${{ env.CURSEFORGE_MINECRAFT_VERSIONS }}"
           release_type: release
           changelog_type: markdown
-          changelog: "${{ env.CURSEFORGE_CHANGELOG }}"
+          changelog: "${{ github.event.release.body }}"
