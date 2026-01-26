@@ -50,7 +50,12 @@ public class PlayerManager extends com.lishid.openinv.internal.common.player.Pla
     ServerLevel level = server.getLevel(Level.OVERWORLD);
     if (level != null) {
       // Adjust player to default spawn (in keeping with Paper handling) when world not found.
-      player.snapTo(player.adjustSpawnLocation(level, level.getSharedSpawnPos()).getBottomCenter(), level.getSharedSpawnAngle(), 0.0F);
+      try {
+        player.snapTo(player.adjustSpawnLocation(level, level.getSharedSpawnPos()).getBottomCenter(), level.getSharedSpawnAngle(), 0.0F);
+      } catch (UnsupportedOperationException e) {
+        // Fall back to using the spawn position directly without adjustment.
+        player.snapTo(level.getSharedSpawnPos().getBottomCenter(), level.getSharedSpawnAngle(), 0.0F);
+      }
       player.spawnIn(level);
     } else {
       logger.warning("Tried to load player with invalid world when no fallback was available!");
