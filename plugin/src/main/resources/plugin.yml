@@ -7,6 +7,9 @@ description: Open a player's inventory as a chest and interact with it in real t
 api-version: "1.13"
 folia-supported: true
 
+libraries:
+  - "org.xerial:sqlite-jdbc:${sqlite}"
+
 permissions:
 
   openinv:
@@ -76,8 +79,16 @@ permissions:
       # Container features
       openinv.container:
         children:
-          openinv.container.any: true
-          openinv.container.silent: true
+          openinv.container.any:
+            children:
+              openinv.container.any.use: true
+          openinv.container.any.use:
+            default: false
+          openinv.container.silent:
+            children:
+              openinv.container.silent.use: true
+          openinv.container.silent.use:
+            default: false
       # Search functionality
       openinv.search:
         children:

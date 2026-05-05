@@ -56,6 +56,7 @@ import java.nio.file.Path;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 
 /**
  * The main class for OpenInv.
@@ -68,6 +69,10 @@ public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
   private LanguageManager languageManager;
   private PlayerLoader playerLoader;
   private boolean isSpigot = false;
+
+  public PlayerLoader getPlayerLoader() {
+    return playerLoader;
+  }
 
   @Override
   public void reloadConfig() {
@@ -96,6 +101,11 @@ public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
   @Override
   public void onDisable() {
     inventoryManager.evictAll();
+    try {
+      playerLoader.getProfileStore().shutdown();
+    } catch (Exception e) {
+      getLogger().log(Level.WARNING, "Failed to shut down profile store correctly", e);
+    }
   }
 
   @Override
@@ -257,20 +267,11 @@ public class OpenInv extends FoliaWrappedJavaPlugin implements IOpenInv {
 
     boolean viewOnly = edit != null && !edit.hasPermission(player);
 
-    if (ownContainer || (viewOnly && config.getAccessEqualMode() != AccessEqualMode.DENY)) {
+    if (ownContainer) {
       return this.accessor.openInventory(player, inventory, viewOnly);
     }
 
-    AccessEqualMode accessMode;
-    if (Permissions.ACCESS_EQUAL_EDIT.hasPermission(player)) {
-      accessMode = AccessEqualMode.ALLOW;
-    } else if (Permissions.ACCESS_EQUAL_VIEW.hasPermission(player)) {
-      accessMode = AccessEqualMode.VIEW;
-    } else if (Permissions.ACCESS_EQUAL_DENY.hasPermission(player)) {
-      accessMode = AccessEqualMode.DENY;
-    } else {
-      accessMode = config.getAccessEqualMode();
-    }
+    AccessEqualMode accessMode = AccessEqualMode.getByPerm(player, config);
 
     for (int level = 4; level > 0; --level) {
       String permission = "openinv.access.level." + level;

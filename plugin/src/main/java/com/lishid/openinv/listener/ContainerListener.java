@@ -39,8 +39,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
-
 /**
  * A listener managing AnyContainer, SilentContainer, and more.
  */
@@ -71,15 +69,14 @@ public class ContainerListener implements Listener {
     }
 
     Player player = event.getPlayer();
-    UUID playerId = player.getUniqueId();
-    boolean any = Permissions.CONTAINER_ANY.hasPermission(player) && PlayerToggles.any().is(playerId);
+    boolean any = PlayerToggles.any().is(player);
     boolean needsAny = accessor.getAnySilentContainer().isAnyContainerNeeded(event.getClickedBlock());
 
     if (!any && needsAny) {
       return;
     }
 
-    boolean silent = Permissions.CONTAINER_SILENT.hasPermission(player) && PlayerToggles.silent().is(playerId);
+    boolean silent = PlayerToggles.silent().is(player);
 
     // If anycontainer or silentcontainer is active
     if (any || silent) {
@@ -103,10 +100,8 @@ public class ContainerListener implements Listener {
       return;
     }
 
-    InventoryHolder holder = event.getInventory().getHolder();
-    if (PlayerToggles.silent().is(player.getUniqueId())
-        && holder != null
-        && this.accessor.getAnySilentContainer().isAnySilentContainer(holder)) {
+    if (PlayerToggles.silent().is(player)
+        && this.accessor.getAnySilentContainer().isAnySilentContainer(event.getInventory())) {
       this.accessor.getAnySilentContainer().deactivateContainer(player);
     }
   }
