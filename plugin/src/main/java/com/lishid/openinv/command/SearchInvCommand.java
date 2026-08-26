@@ -85,7 +85,6 @@ public class SearchInvCommand implements TabExecutor {
       Inventory inventory = searchInv ? player.getInventory() : player.getEnderChest();
       if (findMatch(inventory, material, count)) {
         players.append(player.getName()).append(", ");
-        break;
       }
     }
 
