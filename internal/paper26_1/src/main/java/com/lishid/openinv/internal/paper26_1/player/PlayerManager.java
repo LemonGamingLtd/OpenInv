@@ -31,7 +31,7 @@ public class PlayerManager extends com.lishid.openinv.internal.paper26_2.player.
       ServerLevel level,
       LevelData.RespawnData respawnData
   ) {
-    return player.adjustSpawnLocation(level, respawnData.pos()).getBottomCenter();
+    return Vec3.atBottomCenterOf(respawnData.pos());
   }
 
   @Override

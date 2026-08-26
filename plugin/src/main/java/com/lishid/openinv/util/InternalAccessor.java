@@ -88,14 +88,14 @@ public class InternalAccessor {
     if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 2))) { // 26.2
       return new com.lishid.openinv.internal.paper26_2.InternalAccessor(logger, lang);
     }
-    if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
+    //if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
       return new com.lishid.openinv.internal.paper26_1.InternalAccessor(logger, lang);
-    }
-    if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 11))) { // 1.21.11
-      return new com.lishid.openinv.internal.paper1_21_11.InternalAccessor(logger, lang);
-    }
-    // 1.21.9, 1.21.10
-    return new com.lishid.openinv.internal.paper1_21_10.InternalAccessor(logger, lang);
+    //}
+    //if (BukkitVersions.MINECRAFT.equals(Version.of(1, 21, 11))) { // 1.21.11
+    //  return new com.lishid.openinv.internal.paper1_21_11.InternalAccessor(logger, lang);
+    //}
+    //// 1.21.9, 1.21.10
+    //return new com.lishid.openinv.internal.paper1_21_10.InternalAccessor(logger, lang);
   }
 
   /**

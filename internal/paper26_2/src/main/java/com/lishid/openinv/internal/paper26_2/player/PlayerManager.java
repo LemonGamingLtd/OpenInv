@@ -218,7 +218,7 @@ public class PlayerManager implements com.lishid.openinv.internal.PlayerManager 
       ServerLevel level,
       LevelData.RespawnData respawnData
   ) {
-    return Vec3.atBottomCenterOf(player.adjustSpawnLocation(level, respawnData.pos()));
+    return Vec3.atBottomCenterOf(respawnData.pos());
   }
 
   protected void setServerLevel(ServerPlayer player, ServerLevel level) {
