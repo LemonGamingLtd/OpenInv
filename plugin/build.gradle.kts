@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
   alias(libs.plugins.shadow)
 }
@@ -7,15 +10,26 @@ repositories {
   maven("https://jitpack.io")
 }
 
+val mockitoAgent: Configuration = configurations.create("mockitoAgent")
+
 dependencies {
   compileOnly(libs.spigotapi)
   implementation(project(":openinvapi"))
   implementation(project(":openinvcommon"))
+  implementation(project(":openinvadapterpaper26_3")) {
+    exclude(group = "io.papermc.paper", module = "dev-bundle")
+  }
   implementation(project(":openinvadapterpaper26_2")) {
     exclude(group = "io.papermc.paper", module = "dev-bundle")
   }
   implementation(project(":openinvadapterpaper26_1")) {
     exclude(group = "io.papermc.paper", module = "dev-bundle")
+  }
+  implementation(project(":openinvadapterpaper1_21_11")) {
+    exclude(group = "io.papermc.paper", module = "dev-bundle")
+  }
+  implementation(project(":openinvadapterspigot26_3")) {
+    exclude(group = "org.spigotmc", module = "spigot")
   }
   implementation(project(":openinvadapterspigot26_2")) {
     exclude(group = "org.spigotmc", module = "spigot")
@@ -26,6 +40,10 @@ dependencies {
   implementation(libs.planarwrappers)
   implementation(libs.folia.scheduler.wrapper)
   compileOnly(libs.sqlite.jdbc)
+
+  testImplementation(rootProject.libs.hamcrest)
+  testImplementation(libs.mockito.core)
+  mockitoAgent(libs.mockito.core) { isTransitive = false }
 }
 
 java {
@@ -34,6 +52,27 @@ java {
 
 tasks.withType<JavaCompile>().configureEach {
   options.release = 21
+}
+
+tasks.withType<Test>().configureEach {
+  // Use as many cores as possible to run tests.
+  maxParallelForks = Runtime.getRuntime().availableProcessors()
+  // As Bukkit is very heavily statically initialized, don't reuse forks.
+  forkEvery = 1
+  jvmArgs("-Xshare:off", "-javaagent:${mockitoAgent.asPath}")
+  testLogging {
+    showStackTraces = true
+    exceptionFormat = TestExceptionFormat.FULL
+    events(TestLogEvent.STANDARD_OUT)
+  }
+}
+
+testing {
+  suites {
+    named<JvmTestSuite>("test") {
+      useJUnitJupiter(libs.junit.jupiter.get().version!!)
+    }
+  }
 }
 
 tasks.processResources {
