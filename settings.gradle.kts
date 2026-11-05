@@ -21,10 +21,10 @@ if (!java.lang.Boolean.getBoolean("jitpack")) {
     "paper26_3",
     "paper26_2",
     "paper26_1",
-    "paper1_21_11",
-    "spigot26_3",
-    "spigot26_2",
-    "spigot26_1"
+    //"paper1_21_11",
+    //"spigot26_3",
+    //"spigot26_2",
+    //"spigot26_1"
   )
   for (internal in internals) {
     include(":openinvadapter$internal")

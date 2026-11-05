@@ -72,19 +72,19 @@ public class InternalAccessor {
     }
 
     // Spigot adapters.
-    if (!PAPER) {
-      if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 3))) { // 26.3
-        return new com.github.jikoo.openinv.internal.spigot26_3.InternalAccessor(logger, lang);
-      }
-      if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 2))) { // 26.2
-        return new com.github.jikoo.openinv.internal.spigot26_2.InternalAccessor(logger, lang);
-      }
-      if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
-        return new com.github.jikoo.openinv.internal.spigot26_1.InternalAccessor(logger, lang);
-      }
-      // Spigot min version is 26.1.1, differing from Paper for one more release.
-      return null;
-    }
+    //if (!PAPER) {
+    //  if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 3))) { // 26.3
+    //    return new com.github.jikoo.openinv.internal.spigot26_3.InternalAccessor(logger, lang);
+    //  }
+    //  if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 2))) { // 26.2
+    //    return new com.github.jikoo.openinv.internal.spigot26_2.InternalAccessor(logger, lang);
+    //  }
+    //  if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
+    //    return new com.github.jikoo.openinv.internal.spigot26_1.InternalAccessor(logger, lang);
+    //  }
+    //  // Spigot min version is 26.1.1, differing from Paper for one more release.
+    //  return null;
+    //}
 
     // Paper or a Paper fork, can use Mojang-mapped internals.
     if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 3))) { // 26.3
@@ -93,11 +93,11 @@ public class InternalAccessor {
     if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 2))) { // 26.2
       return new com.lishid.openinv.internal.paper26_2.InternalAccessor(logger, lang);
     }
-    if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
+    //if (BukkitVersions.MINECRAFT.greaterThanOrEqual(Version.of(26, 1))) { // 26.1.1, 26.1.2
       return new com.lishid.openinv.internal.paper26_1.InternalAccessor(logger, lang);
-    }
+    //}
     // 1.21.11
-    return new com.lishid.openinv.internal.paper1_21_11.InternalAccessor(logger, lang);
+    //return new com.lishid.openinv.internal.paper1_21_11.InternalAccessor(logger, lang);
   }
 
   /**
